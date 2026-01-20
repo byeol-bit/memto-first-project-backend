@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb
+    container_name: find_hidden_master
+    restart: always
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MARIADB_ROOT_PASSWORD: 'fhm1111'
+      MARIADB_DATABASE: 'hidden_master_db'
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - fhm_mariadb_data:/var/lib/mysql
+
+volumes:
+  fhm_mariadb_data:
