@@ -14,7 +14,7 @@ const options = {
             schemas: {}
         }
     },
-    apis: ['./*.js']
+    apis: ['./*.js', './routes/*.js']
 };
 
 const specs = swaggereJsdoc(options);
