@@ -1,7 +1,7 @@
 const mariadb = require('mysql2');
 require('dotenv').config();
 
-const connection = mariadb.createConnection(
+const pool = mariadb.createPool(
     {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
@@ -11,4 +11,4 @@ const connection = mariadb.createConnection(
     }
 );
 
-module.exports = connection;
+module.exports = pool;
