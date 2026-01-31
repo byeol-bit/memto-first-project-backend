@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `nickname` VARCHAR(255) NOT NULL,
     `profileImage` VARCHAR(255),
+    `profileImageUpdatedAt` DATETIME,
     `introduction` TEXT,
     `category` VARCHAR(100),
     `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
