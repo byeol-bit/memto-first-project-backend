@@ -1,16 +1,6 @@
 const connection = require('../database/mariadb');
-/*
-CREATE TABLE IF NOT EXISTS `users` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `nickname` VARCHAR(255) NOT NULL,
-    `profileImage` VARCHAR(255),
-    `introduction` TEXT,
-    `category` VARCHAR(100),
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+const promiseConn = connection.promise();
 
-*/
 /**
  * @param {string} nickname 
  * @param {string} introduction
@@ -60,7 +50,37 @@ function searchUsers(nickname, category, callback) {
     connection.query(sql, values, callback);
 }
 
+/**
+ * @param {number} id 
+ * @param {string} filename 
+ * @param {Date} date 
+ * @returns {number}
+ */
+async function updateProfileImageById(id, filename, date) {
+    const [result] = await promiseConn.query(
+        'UPDATE users SET profileImage = ?, profileImageUpdatedAt = ? WHERE id = ?',
+        [filename, date, id]
+    );
+
+    return result.affectedRows;
+}
+
+/**
+ * @param {number} id 
+ * @returns {Promise<{profileImage: string, profileImageUpdatedAt: Date}>}
+ */
+async function getProfileImageInfoById(id) {
+    const [rows] = await promiseConn.query(
+        'SELECT profileImage, profileImageUpdatedAt FROM users WHERE id = ?',
+        [id]
+    );
+
+    return rows[0];
+}
+
 module.exports.insertUser = insertUser;
 module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.updateProfileImageById = updateProfileImageById;
+module.exports.getProfileImageInfoById = getProfileImageInfoById;
