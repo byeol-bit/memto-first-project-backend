@@ -77,5 +77,6 @@ CREATE TABLE IF NOT EXISTS `follows` (
     `followingId` INT NOT NULL,
     `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`followerId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`followingId`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`followingId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `follow` (`followerId`, `followingId`)
 );
