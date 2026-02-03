@@ -4,6 +4,17 @@ const RestaurantService = require('../services/restaurantService');
 const catchAsync = require('../utils/catchAsync');
 
 
+router.get('/', catchAsync(async (req, res) => {
+    const userData = req.body
+    const result = await RestaurantService.save(userData)
+    
+    res.status(201).json({
+        success: true,
+        message: "정보가 성공적으로 저장되었습니다.",
+        data: result
+    });
+}));
+
 /**
  * @swagger
  * /restaurants:
