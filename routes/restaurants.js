@@ -3,6 +3,20 @@ const router = express.Router();
 const RestaurantService = require('../services/restaurantService');
 const catchAsync = require('../utils/catchAsync');
 
+/**
+ * @swagger
+ * /restaurants:
+ *   post:
+ *     tags:
+ *       - restaurants
+ *     summary: 식당 등록
+ *     description: 식당을 등록합니다.
+ *     responses:
+ *       201:
+ *         description: 성공
+ *       500:
+ *         description: 서버 오류
+ */
 
 router.post('/', catchAsync(async (req, res) => {
     const userData = req.body
@@ -35,6 +49,27 @@ router.get('/', catchAsync(async (req, res) => {
     res.status(200).json(restaurants);
 }));
 
+/**
+ * @swagger
+ * /restaurants:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 특정 식당 조회
+ *     description: id로 등록된 특정 식당을 반환합니다.
+ *     responses:
+ *       200:
+ *         description: 성공
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.get('/:id', catchAsync(async (req, res) => {
+    let {id} = req.params
+    id = parseInt(id)
+    const restaurants = await RestaurantService.getRestaurants(id);
+    res.status(200).json(restaurants);
+}));
 /**
  * @swagger
  * /restaurants/search:
