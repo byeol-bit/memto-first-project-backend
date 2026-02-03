@@ -12,6 +12,10 @@ class restaurantService {
         return restaurants;
     }
 
+    static async getRestaurants(restaurantId) {
+        const restaurants = await RestaurantRepo.find(restaurantId)
+    }
+
     static async searchPlaces(query) {
     const results = await KakaoApi.search(query);
     
