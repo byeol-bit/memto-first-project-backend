@@ -5,7 +5,7 @@ const pool = require('../database/mariadb');
  * @param {number} followingId
  * @returns {Promise<number>}
  */
-async function insertFollow(followerId, followingId) { console.log(followerId + ',' + followingId);
+async function insertFollow(followerId, followingId) {
     const [result] = await pool.query(
         'INSERT IGNORE INTO follows(follower_id, following_id) VALUES(?, ?)',
         [followerId, followingId]

@@ -48,7 +48,6 @@ async function follow(followerId, followingId) {
     if (validateFailResult) return validateFailResult;
 
     let affectedRows = await followsRepository.insertFollow(followerId, followingId);
-    console.log(`follow, affectedRows: ${affectedRows}`); // 임시
     if (affectedRows > 0) {
         return {
             statusCode: 200
