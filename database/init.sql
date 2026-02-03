@@ -1,82 +1,82 @@
-CREATE TABLE IF NOT EXISTS `users` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `nickname` VARCHAR(255) NOT NULL,
-    `profileImage` VARCHAR(255),
-    `profileImageUpdatedAt` DATETIME,
-    `introduction` TEXT,
-    `category` VARCHAR(100),
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE restaurants (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255),
+    phone_number VARCHAR(20),
+    category VARCHAR(50),
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    kakao_place_id VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS `restaurants` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(255) NOT NULL,
-    `address` VARCHAR(255),
-    `phoneNumber` VARCHAR(50),
-    `latitude` FLOAT,
-    `longitude` FLOAT,
-    `kakaoPlaceId` VARCHAR(100),
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nickname VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL, 
+    profile_image VARCHAR(2048),
+    introduction TEXT,
+    category VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS `restaurantImages` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `restaurantId` INT NOT NULL,
-    `imageUrl` VARCHAR(255) NOT NULL,
-    `displayOrder` INT DEFAULT 0,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`restaurantId`) REFERENCES `restaurants`(`id`) ON DELETE CASCADE
+CREATE TABLE restaurant_images (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    restaurant_id INT,
+    image_url VARCHAR(2048) NOT NULL,
+    display_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS `visits` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `userId` INT NOT NULL,
-    `restaurantId` INT NOT NULL,
-    `visitDate` DATE,
-    `review` TEXT,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`restaurantId`) REFERENCES `restaurants`(`id`) ON DELETE CASCADE
+CREATE TABLE visits (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NULL, 
+    restaurant_id INT NULL,
+    visit_date DATE,
+    review TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL, 
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS `visitImages` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `visitId` INT NOT NULL,
-    `imageUrl` VARCHAR(255) NOT NULL,
-    `displayOrder` INT DEFAULT 0,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`visitId`) REFERENCES `visits`(`id`) ON DELETE CASCADE
+CREATE TABLE visit_images (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    visit_id INT,
+    image_url VARCHAR(2048) NOT NULL,
+    display_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS `restaurantLikes` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `userId` INT NOT NULL,
-    `restaurantId` INT NOT NULL,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`restaurantId`) REFERENCES `restaurants`(`id`) ON DELETE CASCADE
+CREATE TABLE visit_likes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    visit_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_visit_like (user_id, visit_id) 
 );
 
-CREATE TABLE IF NOT EXISTS `visitLikes` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `userId` INT NOT NULL,
-    `visitId` INT NOT NULL,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`visitId`) REFERENCES `visits`(`id`) ON DELETE CASCADE
+CREATE TABLE restaurant_likes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    restaurant_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_restaurant_like (user_id, restaurant_id)
 );
 
-CREATE TABLE IF NOT EXISTS `follows` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `followerId` INT NOT NULL,
-    `followingId` INT NOT NULL,
-    `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`followerId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`followingId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    UNIQUE KEY `follow` (`followerId`, `followingId`)
+CREATE TABLE follows (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    follower_id INT NOT NULL,
+    following_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_follower_following (follower_id, following_id)
 );

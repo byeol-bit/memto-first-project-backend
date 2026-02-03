@@ -20,8 +20,8 @@ function start() {
     app.use('/api', swaggerUi.serve, swaggerUi.setup(specs));
     app.use('', router);
 
-    server = app.listen(3000, () => {
-        console.log('port 3000 is listening');
+    app.listen(8080, () => {
+        console.log('port 8080 is listening');
     });
 }
 
