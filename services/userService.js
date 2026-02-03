@@ -1,19 +1,7 @@
+const fs = require('fs').promises;
+const path = require('path');
 const userRepository = require('../repositories/users');
-/*
-여기서는 뭐해야됨?
-db와 연동해주는 메서드가 있을거임.
-고수 등록 post /users
-고수 목록 get /users
-고수 상세 get /users/:id
-고수 검색 get /users/search
-
-if (err) {
-    err.statusCode = 500;
-    callback(err, null);
-} else {
-    callback(null, results.insertId);
-}
-*/
+const dateUtil =  require('../utils/date');
 
 const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
 
@@ -114,7 +102,78 @@ function searchUsers(filters, callback) {
     }
 }
 
+const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
+
+// 프로필 이미지를 업로드
+/**
+ * 
+ * @param {number} id
+ * @param {Express.Multer.File} file
+ * @returns {Promise<Error | {statusCode: number}>}
+ */
+async function uploadProfileImage(id, file) {
+    if (!file) {
+        let err = new Error('file not found');
+        err.statusCode = 400;
+        return err;
+    };
+
+    if (Number.isNaN(id)) {
+        let err = new Error('invaild id value');
+        err.statusCode = 400;
+        return err;
+    }
+
+    let ext = file.originalname.split('.').at(-1);
+    if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
+        let err = new Error(`mismatched file type. only allowed ${IMAGE_EXT}`);
+        err.statusCode = 400;
+        return err;
+    }
+
+    let now = new Date();
+    let date = dateUtil.formatDate(now);
+
+    let path = `images/users/${date}`;
+    let filename = `${id}.${ext}`;
+
+    await fs.mkdir(path, { recursive: true });
+    await fs.rename(`${file.path}`, `${path}/${filename}`);
+
+    let affectedRows = await userRepository.updateProfileImageById(id, filename, now);
+    if (affectedRows === 0) {
+        let err = new Error('update fail');
+        err.statusCode = 400;
+        return err;
+    } else {
+        return {
+            statusCode: 201
+        }
+    }
+}
+
+/**
+ * @param {number} id
+ * @returns {Promise<string>}
+ */
+async function getProfileImagePath(id) {
+    if (Number.isNaN(id)) {
+        let err = new Error('invaild id value');
+        err.statusCode = 400;
+        return err;
+    }
+
+    const result = await userRepository.getProfileImageInfoById(id);
+    const date = dateUtil.formatDate(result.profileImageUpdatedAt);
+    let filepath = `/images/users/${date}/${result.profileImage}`;
+    filepath = path.join(__dirname, '..', filepath);
+
+    return filepath;
+}
+
 module.exports.createUsers = createUsers;
 module.exports.getUsers = getUsers;
 module.exports.getUserById = getUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.uploadProfileImage = uploadProfileImage;
+module.exports.getProfileImagePath = getProfileImagePath;

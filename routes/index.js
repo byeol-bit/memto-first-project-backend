@@ -4,6 +4,7 @@ const usersRouter = require('./users');
 const restaurantsRouter = require('./restaurants');
 
 router.use('/users', usersRouter);
+router.use('/follows', followsRouter);
 
 router.use('/restaurants', restaurantsRouter);
 

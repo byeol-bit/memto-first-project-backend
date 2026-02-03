@@ -1,6 +1,8 @@
 const express = require('express');
-const router = express.Router();
+const multer = require('multer');
 const userService = require('../services/userService');
+
+const router = express.Router();
 
 /**
  * @swagger
@@ -191,6 +193,110 @@ router.get('/:id', (req, res) => {
         }
     });
 });
+
+const upload = multer({ dest: 'images/temp/' });
+
+/**
+ * @swagger
+ * /users/{id}/image:
+ *   put:
+ *     tags:
+ *       - users
+ *     summary: 프로필 이미지 등록
+ *     description: 유저의 프로필 이미지를 등록합니다.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *       - in: formData
+ *         name: image
+ *         type: file
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       201:
+ *         description: 이미지 업데이트 성공
+ *       400:
+ *         description: id 또는 파일에 문제가 있으면 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+*/
+router.put('/:id/image', upload.single('image'), async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const result = await userService.uploadProfileImage(id, req.file);
+
+        if (result.statusCode == 201) {
+            res.status(201).end();
+        } else {
+            res.status(result.statusCode).json({message: result.message});
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+})
+
+/**
+ * @swagger
+ * /users/{id}/image:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 프로필 이미지 획득
+ *     description: 유저의 프로필 이미지를 획득합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     produces:
+ *       - image/jpeg
+ *       - image/png
+ *       - image/gif
+ *       - image/webp
+ *     responses:
+ *       200:
+ *         description: 이미지 반환
+ *       400:
+ *         description: id 또는 파일에 문제가 있으면 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+*/
+router.get('/:id/image', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const path = await userService.getProfileImagePath(id);
+
+        res.sendFile(path);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+})
 
 module.exports = router;
 
