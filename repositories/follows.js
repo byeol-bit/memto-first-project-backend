@@ -1,14 +1,13 @@
-const connection = require('../database/mariadb');
-const promiseConn = connection.promise();
+const pool = require('../database/mariadb');
 
 /**
  * @param {number} followerId
  * @param {number} followingId
  * @returns {Promise<number>}
  */
-async function insertFollow(followerId, followingId) {
-    const [result] = await promiseConn.query(
-        'INSERT IGNORE INTO follows(followerId, followingId) VALUES(?, ?)',
+async function insertFollow(followerId, followingId) { console.log(followerId + ',' + followingId);
+    const [result] = await pool.query(
+        'INSERT IGNORE INTO follows(follower_id, following_id) VALUES(?, ?)',
         [followerId, followingId]
     );
 
@@ -21,8 +20,8 @@ async function insertFollow(followerId, followingId) {
  * @returns {Promise<number>}
  */
 async function deleteFollow(followerId, followingId) {
-    const [result] = await promiseConn.query(
-        'DELETE FROM follows WHERE followerId = ? AND followingId = ?',
+    const [result] = await pool.query(
+        'DELETE FROM follows WHERE follower_id = ? AND following_id = ?',
         [followerId, followingId]
     );
 
@@ -35,8 +34,8 @@ async function deleteFollow(followerId, followingId) {
  * @returns {Promise<number>}
  */
 async function isFollow(followerId, followingId) {
-    const [rows] = await promiseConn.query( // sql 재작성하기
-        'SELECT 1 FROM follows WHERE followerId = ? AND followingId = ?',
+    const [rows] = await pool.query( // sql 재작성하기
+        'SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?',
         [followerId, followingId]
     );
 

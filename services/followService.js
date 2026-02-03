@@ -56,7 +56,7 @@ async function follow(followerId, followingId) {
     } else {
         return {
             statusCode: 409,
-            message: "follow status already exists"
+            message: "이미 팔로우 중이거나, 대상 유저가 존재하지 않습니다."
         }
     }
 }
