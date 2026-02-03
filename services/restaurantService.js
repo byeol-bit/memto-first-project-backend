@@ -2,6 +2,11 @@ const KakaoApi = require('../utils/kakaoApi');
 const RestaurantRepo = require('../repositories/restaurants');
 
 class restaurantService {
+    static async postRestaurants(userData) {
+        const restaurant = await RestaurantRepo.save(userData);
+        return restaurant
+    }
+    
     static async getAllRestaurants() {
         const restaurants = await RestaurantRepo.findAll();
         return restaurants;
