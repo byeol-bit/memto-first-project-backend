@@ -1,40 +1,44 @@
-const connection = require('../database/mariadb');
-const promiseConn = connection.promise();
+const pool = require('../database/mariadb');
 
 /**
  * @param {string} nickname 
- * @param {string} introduction
- * @param {string} category
- * @param {(err: Error | null, results) => void} callback
+ * @param {string} introduction 
+ * @param {string} category 
+ * @returns {Promise<number>}
  */
-function insertUser(nickname, introduction, category, callback) {
-    connection.query(
-        'INSERT INTO users(nickname, introduction, category) VALUES(?, ?, ?)',
-        [nickname, introduction, category],
-        callback
-    )
+async function insertUser(nickname, introduction, category, password) {
+    const [result] = await pool.query(
+        'INSERT INTO users(nickname, introduction, category, password) VALUES(?, ?, ?, ?)',
+        [nickname, introduction, category, password]
+    );
+
+    return result.insertId;
 }
 
 /**
- * @param {(err: Error | null, results: User[]) => void} callback 
+ * @returns {Promise<User[]>}
  */
-function findUsers(callback) {
-    connection.query('SELECT * FROM users', callback);
+async function findUsers() {
+    const [results] = await pool.query('SELECT * FROM users');
+    return results;
 }
 
+
 /**
- * @param {(err: Error | null, results: User[]) => void} callback 
+ * @param {number} id 
+ * @returns {Promise<User[]>}
  */
-function findUserById(id, callback) {
-    connection.query('SELECT * FROM users WHERE id = ?', id, callback);
+async function findUserById(id) {
+    const [results] = await pool.query('SELECT * FROM users WHERE id = ?', id);
+    return results;
 }
 
 /**
  * @param {string | null | undefined} nickname 
  * @param {string | null | undefined} category 
- * @param {(err: Error | null, results: User[]) => void} callback 
+ * @returns {Promise<User[]>}
  */
-function searchUsers(nickname, category, callback) {
+async function searchUsers(nickname, category) {
     let sql = 'SELECT * FROM users WHERE 1=1';
     let values = [];
 
@@ -47,17 +51,18 @@ function searchUsers(nickname, category, callback) {
         values.push(category);
     }
 
-    connection.query(sql, values, callback);
+    let [results] = await pool.query(sql, values);
+    return results;
 }
 
 /**
  * @param {number} id 
  * @param {string} filename 
  * @param {Date} date 
- * @returns {number}
+ * @returns {Promise<number>}
  */
 async function updateProfileImageById(id, filename, date) {
-    const [result] = await promiseConn.query(
+    const [result] = await pool.query(
         'UPDATE users SET profileImage = ?, profileImageUpdatedAt = ? WHERE id = ?',
         [filename, date, id]
     );
@@ -70,7 +75,7 @@ async function updateProfileImageById(id, filename, date) {
  * @returns {Promise<{profileImage: string, profileImageUpdatedAt: Date}>}
  */
 async function getProfileImageInfoById(id) {
-    const [rows] = await promiseConn.query(
+    const [rows] = await pool.query(
         'SELECT profileImage, profileImageUpdatedAt FROM users WHERE id = ?',
         [id]
     );
