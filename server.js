@@ -13,7 +13,9 @@ function start() {
     //     response.writeHead(204);
     //     return response.end();
     // }
-    app.use(cors());
+    app.use(cors({ origin: [
+        'http://localhost:5173'
+    ]}));
     app.use(express.json());
     app.use('/api', swaggerUi.serve, swaggerUi.setup(specs));
     app.use('', router);
