@@ -3,6 +3,7 @@ const app = express();
 const url = require('url');
 const { swaggerUi, specs } = require('./swagger');
 const router = require('./routes/index');
+const cors = require('cors');
 
 let server;
 
@@ -12,14 +13,14 @@ function start() {
     //     response.writeHead(204);
     //     return response.end();
     // }
-    app.get('/', (req, res) => {
-        res.send('server running!!');
-    });
-    
+    app.use(cors());
     app.use(express.json());
     app.use('/api', swaggerUi.serve, swaggerUi.setup(specs));
     app.use('', router);
 
+    app.get('/', (req, res) => {
+        res.send('server running!!');
+    });
     app.listen(8080, () => {
         console.log('port 8080 is listening');
     });
