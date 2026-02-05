@@ -1,6 +1,12 @@
 const connection = require('../database/mariadb'); // db connection pool
 
 class RestaurantRepo {
+    static async find(restaurant_id) {
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE id = ? ORDER BY created_at DESC', [restaurant_id]
+        );
+        return rows;
+    }
     static async findAll() {
         const [rows] = await connection.query(
             'SELECT * FROM restaurants ORDER BY created_at DESC'

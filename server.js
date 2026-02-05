@@ -8,11 +8,6 @@ const cors = require('cors');
 let server;
 
 function start() {
-    // let pathname = url.parse(request.url).pathname;
-    // if (pathname === '/favicon.ico') {
-    //     response.writeHead(204);
-    //     return response.end();
-    // }
     app.use(cors({ origin: [
         'http://localhost:5173',
         'https://memto-first-project-frontend.vercel.app/'
@@ -42,11 +37,7 @@ function start() {
 
 }
 
-function close() {
-    server.close(() => process.exit(0))
-}
 
-process.on('SIGINT', close);
-process.on('SIGTERM', close);
+}
 
 module.exports = { start };

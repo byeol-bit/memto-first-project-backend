@@ -1,8 +1,11 @@
 const express = require('express');
 const multer = require('multer');
 const userService = require('../services/userService');
+const catchAsync = require('../utils/catchAsync');
 
 const router = express.Router();
+
+const upload = multer({ dest: 'images/temp/' });
 
 /**
  * @swagger
@@ -45,6 +48,7 @@ const router = express.Router();
  *             - nickname
  *             - introduction
  *             - category
+ *             - password
  *           properties:
  *             nickname:
  *               type: string
@@ -53,6 +57,8 @@ const router = express.Router();
  *             category:
  *               type: string
  *               enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
+ *             password:
+ *               type: string
  *     produces:
  *       - application/json
  *     responses:
@@ -73,17 +79,16 @@ const router = express.Router();
  *       500:
  *         description: 서버 오류
 */
-router.post('/', (req, res) => {
-    userService.createUsers(req.body, (err, id) => {
-        if (err == null) {
-            res.status(201).json({id});
-        } else if (err.statusCode == 400) {
-            res.status(err.statusCode).json({message: err.message});
-        } else {
-            res.statusCode(err.statusCode);
-        }
-    });
-});
+router.post('/', catchAsync(async (req, res) => { 
+    let result = await userService.createUsers(req.body);
+    if (typeof result == 'number') {
+        res.status(201).json({id: result});
+    } else {
+        res.status(result.statusCode).json({
+            message: result.message
+        });
+    }
+}));
 
 /**
  * @swagger
@@ -105,16 +110,10 @@ router.post('/', (req, res) => {
  *       500:
  *         description: 서버 오류
 */
-router.get('/', (_, res) => {
-    userService.getUsers((err, users) => {
-        if (err == null) {
-            res.status(200).json(users);
-        } else {
-            console.log(err);
-            res.statusCode(err.statusCode);
-        }
-    });
-});
+router.get('/', catchAsync(async (_, res) => {
+    let users = await userService.getUsers();
+    res.status(200).json(users);
+}));
 
 /**
  * @swagger
@@ -146,15 +145,14 @@ router.get('/', (_, res) => {
  *       500:
  *         description: 서버 오류
 */
-router.get('/search', (req, res) => {
-    userService.searchUsers(req.query, (err, users) => {
-        if (err == null) {
-            res.status(200).json(users);
-        } else {
-            res.statusCode(err.statusCode);
-        }
-    })
-});
+router.get('/search', catchAsync(async (req, res) => { 
+    let result = await userService.searchUsers(req.query);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json(users);
+    } else {
+        res.status(200).json({users: result});
+    }
+}));
 
 /**
  * @swagger
@@ -180,21 +178,68 @@ router.get('/search', (req, res) => {
  *       500:
  *         description: 서버 오류
 */
-router.get('/:id', (req, res) => {
-    userService.getUserById(req.params.id, (err, user) => {
-        if (err == null) {
-            res.status(200).json(user);
-        } else if (err.statusCode == 400) {
-            res.status(err.statusCode).json({message: err.message});
-        } else if (err.statusCode == 404) {
-            res.status(err.statusCode).json({message: err.message});
-        } else {
-            res.statusCode(err.statusCode);
-        }
-    });
-});
+router.get('/:id', catchAsync(async (req, res) => {
+    let result = await userService.getUserById(req.params.id);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({ message: result.message });
+    } else {
+        res.status(200).json(result);
+    };
+}));
 
-const upload = multer({ dest: 'images/temp/' });
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     tags:
+ *       - users
+ *     summary: 고수 정보 수정
+ *     description: 원하는 옵션을 선택적으로 사용해 고수의 정보를 수정합니다.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *       - in: formData
+ *         name: nickname
+ *         type: string
+ *       - in: formData
+ *         name: introduction
+ *         type: string
+ *       - in: formData
+ *         name: category
+ *         type: string
+ *       - in: formData
+ *         name: image
+ *         type: file
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.put('/:id', upload.single('image'), catchAsync(async (req, res) => {
+    let err = await userService.updateUser(req.params.id, req.body, req.file);
+    if (err == null) {
+        res.status(200).end();
+    } else {
+        res.status(err.statusCode).json({
+            message: err.message
+        });
+    }
+}))
+
+
 
 /**
  * @swagger
