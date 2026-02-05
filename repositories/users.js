@@ -58,13 +58,12 @@ async function searchUsers(nickname, category) {
 /**
  * @param {number} id 
  * @param {string} filename 
- * @param {Date} date 
  * @returns {Promise<number>}
  */
-async function updateProfileImageById(id, filename, date) {
+async function updateProfileImageById(id, filename) {
     const [result] = await pool.query(
-        'UPDATE users SET profileImage = ?, profileImageUpdatedAt = ? WHERE id = ?',
-        [filename, date, id]
+        'UPDATE users SET profileImage = ? WHERE id = ?',
+        [filename, id]
     );
 
     return result.affectedRows;
@@ -72,11 +71,11 @@ async function updateProfileImageById(id, filename, date) {
 
 /**
  * @param {number} id 
- * @returns {Promise<{profileImage: string, profileImageUpdatedAt: Date}>}
+ * @returns {Promise<{profileImage: string}>}
  */
-async function getProfileImageInfoById(id) {
+async function getProfileImageById(id) {
     const [rows] = await pool.query(
-        'SELECT profileImage, profileImageUpdatedAt FROM users WHERE id = ?',
+        'SELECT profileImage FROM users WHERE id = ?',
         [id]
     );
 
@@ -88,4 +87,4 @@ module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.searchUsers = searchUsers;
 module.exports.updateProfileImageById = updateProfileImageById;
-module.exports.getProfileImageInfoById = getProfileImageInfoById;
+module.exports.getProfileImageById = getProfileImageById;

@@ -2,7 +2,6 @@ const fs = require('fs').promises;
 const path = require('path');
 const passwordUtil = require('../utils/password');
 const userRepository = require('../repositories/users');
-const dateUtil =  require('../utils/date');
 
 const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
 
@@ -113,23 +112,20 @@ async function uploadProfileImage(id, file) {
 
     let ext = file.originalname.split('.').at(-1);
     if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
-        let err = new Error(`mismatched file type. only allowed ${IMAGE_EXT}`);
+        let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
         err.statusCode = 400;
         return err;
     }
 
-    let now = new Date();
-    let date = dateUtil.formatDate(now);
-
-    let path = `images/users/${date}`;
+    let path = 'images/users';
     let filename = `${id}.${ext}`;
 
     await fs.mkdir(path, { recursive: true });
     await fs.rename(`${file.path}`, `${path}/${filename}`);
 
-    let affectedRows = await userRepository.updateProfileImageById(id, filename, now);
+    let affectedRows = await userRepository.updateProfileImageById(id, filename);
     if (affectedRows === 0) {
-        let err = new Error('update fail');
+        let err = new Error('업데이트 실패');
         err.statusCode = 400;
         return err;
     } else {
@@ -150,9 +146,8 @@ async function getProfileImagePath(id) {
         return err;
     }
 
-    const result = await userRepository.getProfileImageInfoById(id);
-    const date = dateUtil.formatDate(result.profileImageUpdatedAt);
-    let filepath = `/images/users/${date}/${result.profileImage}`;
+    const result = await userRepository.getProfileImageById(id);
+    let filepath = `/images/users/${result.profileImage}`;
     filepath = path.join(__dirname, '..', filepath);
 
     return filepath;
