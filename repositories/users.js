@@ -19,7 +19,7 @@ async function insertUser(nickname, introduction, category, password) {
  * @returns {Promise<User[]>}
  */
 async function findUsers() {
-    const [results] = await pool.query('SELECT * FROM users');
+    const [results] = await pool.query('SELECT id, nickname, introduction, category, created_at, updated_at FROM users');
     return results;
 }
 
@@ -29,7 +29,7 @@ async function findUsers() {
  * @returns {Promise<User[]>}
  */
 async function findUserById(id) {
-    const [results] = await pool.query('SELECT * FROM users WHERE id = ?', id);
+    const [results] = await pool.query('SELECT id, nickname, introduction, category, created_at, updated_at FROM users WHERE id = ?', id);
     return results;
 }
 
@@ -39,7 +39,7 @@ async function findUserById(id) {
  * @returns {Promise<User[]>}
  */
 async function searchUsers(nickname, category) {
-    let sql = 'SELECT * FROM users WHERE 1=1';
+    let sql = 'SELECT id, nickname, introduction, category, created_at, updated_at FROM users WHERE 1=1';
     let values = [];
 
     if (nickname) {

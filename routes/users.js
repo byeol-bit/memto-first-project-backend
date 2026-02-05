@@ -18,8 +18,6 @@ const upload = multer({ dest: 'images/temp/' });
  *         type: number
  *       nickname:
  *         type: string
- *       profileImage:
- *         type: string
  *       introduction:
  *         type: string
  *       category:
