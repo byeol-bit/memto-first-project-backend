@@ -148,7 +148,7 @@ router.get('/', catchAsync(async (_, res) => {
 router.get('/search', catchAsync(async (req, res) => { 
     let result = await userService.searchUsers(req.query);
     if (result instanceof Error) {
-        res.status(result.statusCode).json(users);
+        res.status(result.statusCode).json({message: result.message});
     } else {
         res.status(200).json({users: result});
     }

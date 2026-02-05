@@ -35,20 +35,20 @@ async function findUserById(id) {
 
 /**
  * @param {string | null | undefined} nickname 
- * @param {string | null | undefined} category 
+ * @param {string[]} categories
  * @returns {Promise<User[]>}
  */
-async function searchUsers(nickname, category) {
-    let sql = 'SELECT * FROM users WHERE 1=1';
+async function searchUsers(nickname, categories) {
+    let sql = 'SELECT id, nickname, introduction, category, created_at, updated_at FROM users WHERE 1=1';
     let values = [];
 
     if (nickname) {
         sql += ' AND nickname LIKE ?';
         values.push(`%${nickname}%`);
     }
-    if (category) {
-        sql += ' AND category = ?';
-        values.push(category);
+    if (categories.length) {
+        sql += ' AND category IN (?)';
+        values.push(categories);
     }
 
     let [results] = await pool.query(sql, values);
