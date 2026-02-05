@@ -88,6 +88,71 @@ async function searchUsers(filters) {
     }
 }
 
+// body 입력: nickname, introduction, category
+/**
+ * @param {string} id 
+ * @param {{
+ *     nickname?: string,
+ *     introduction?: string,
+ *     category?: string
+ * }} updateUserInput
+ * @param {Express.Multer.File | undefined} file
+ * @returns {Promise<Error | null>}
+ */
+async function updateUser(id, updateUserInput, file) {
+    id = parseInt(id);
+    updateUserInput = updateUserInput ?? {};
+    if (
+        Number.isNaN(id) ||
+        updateUserInput.category != null && !CATEGORIES.includes(updateUserInput.category) ||
+        updateUserInput.profile_image != null
+    ) {
+        let err = new Error('타입이 올바르지 않습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+
+    let newUpdateUserInput = {};
+
+    let ext = file.originalname.split('.').at(-1);
+    if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
+        let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
+        err.statusCode = 400;
+        return err;
+    }
+
+    let path = 'images/users';
+    let filename = `${id}.${ext}`;
+
+    if (file) {
+        await fs.mkdir(path, { recursive: true });
+        await fs.rename(`${file.path}`, `${path}/${filename}`);
+        newUpdateUserInput.profile_image = filename;
+    }
+
+    for (const [key, value] of Object.entries(updateUserInput)) {
+        if (value != null) {
+            newUpdateUserInput[key] = value;
+        }
+    }
+
+    if (Object.keys(newUpdateUserInput).length === 0 && !file) {
+        let err = new Error('업데이트할 내용이 없습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+
+    const affectedRows = await userRepository.updateUser(id, newUpdateUserInput);
+    
+    if (affectedRows === 0) {
+        let err = new Error('업데이트에 실패했습니다.');
+        err.statusCode = 500;
+        return err;
+    }
+
+    return null;
+}
+
 const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
 
 // 프로필 이미지를 업로드
@@ -147,7 +212,7 @@ async function getProfileImagePath(id) {
     }
 
     const result = await userRepository.getProfileImageById(id);
-    let filepath = `/images/users/${result.profileImage}`;
+    let filepath = `/images/users/${result.profile_image}`;
     filepath = path.join(__dirname, '..', filepath);
 
     return filepath;
@@ -157,5 +222,6 @@ module.exports.createUsers = createUsers;
 module.exports.getUsers = getUsers;
 module.exports.getUserById = getUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.updateUser = updateUser;
 module.exports.uploadProfileImage = uploadProfileImage;
 module.exports.getProfileImagePath = getProfileImagePath;
