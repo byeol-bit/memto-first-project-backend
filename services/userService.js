@@ -88,7 +88,6 @@ async function searchUsers(filters) {
     }
 }
 
-// body 입력: nickname, introduction, category
 /**
  * @param {string} id 
  * @param {{
