@@ -7,9 +7,29 @@ class RestaurantRepo {
         );
         return rows;
     }
+
+    static async find(restaurantId) {
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+        );
+        return rows;
+    }
+    
+    static async findBySearch(querys) {
+        let sql = "SELECT * FROM restaurants WHERE 1=1"
+        if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
+        if (querys.category) sql += ` AND category = '${querys.category}'`;
+
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+        );
+        return rows;
+    }
     
     static async findByKakaoId(kakaoId) {
-        const [rows] = await connection.query('SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]);
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]
+        );
         return rows[0];
     }
 

@@ -3,11 +3,11 @@ const connection = require('../database/mariadb');
 class VisitsRepo {
         static async save(visitData) {
 
-        const {userId, restaurantsId, visitDate, review} = visitData
+        const {userId, restaurantId, visitDate, review} = visitData
         const [rows] = await connection.query(
-            `INSERT INTO visits (user_id, restaurants_id, visit_date, review) 
+            `INSERT INTO visits (user_id, restaurant_id, visit_date, review) 
              VALUES (?, ?, ?, ?)`,
-            [userId, restaurantsId, visitDate, review]
+            [userId, restaurantId, visitDate, review]
         );
         return rows
     }
@@ -15,6 +15,20 @@ class VisitsRepo {
     static async findAll() {
         const [rows] = await connection.query(
             'SELECT * FROM visits ORDER BY created_at DESC'
+        );
+        return rows;
+    }
+    
+    static async findVisitByUser(userId) {
+        const [rows] = await connection.query(
+            'SELECT * FROM visits WHERE user_id = ?', [userId]
+        );
+        return rows;
+    }
+
+    static async findVisitByRestaurant(restaurantId) {
+        const [rows] = await connection.query(
+            'SELECT * FROM visits WHERE restaurant_id = ?', [restaurantId]
         );
         return rows;
     }

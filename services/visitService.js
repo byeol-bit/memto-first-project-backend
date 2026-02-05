@@ -6,8 +6,18 @@ class VisitService {
         return visits
     }
     
-    static async getAllVisits() {
+    static async getAllVisit() {
         const visits = await VisitRepo.findAll();
+        return visits;
+    }
+
+    static async getVisitByUser() {
+        const visits = await VisitRepo.findVisitByUser();
+        return visits;
+    }
+
+    static async getVisitByRestaurant() {
+        const visits = await VisitRepo.findVisitByRestaurant();
         return visits;
     }
 

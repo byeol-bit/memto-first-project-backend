@@ -17,7 +17,15 @@ class RestaurantService {
         return restaurants;
     }
 
-    static async searchPlaces(query) {
+    static async getBySearch(querys) {
+        let sql = "SELECT * FROM restaurants WHERE 1=1"
+        if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
+        if (querys.category) sql += ` AND category = '${querys.category}'`;
+
+        const restaruants = await RestaurantRepo.search
+        return restaurants;
+    }
+    static async searchKakao(query) {
         const results = await KakaoApi.search(query);
     
         const formattedResults = results.documents.map(place => ({

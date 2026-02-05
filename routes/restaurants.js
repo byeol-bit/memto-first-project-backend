@@ -42,7 +42,7 @@ router.get('/', catchAsync(async (req, res) => {
  *     tags:
  *       - restaurants
  *     summary: 맛집 검색
- *     description: 키워드를 통해 카카오 api 맛집 정보를 검색합니다.
+ *     description: 키워드를 통해 맛집 정보를 검색합니다.
  *     produces:
  *       - application/json
  *     parameters:
@@ -60,9 +60,47 @@ router.get('/', catchAsync(async (req, res) => {
  */
 
 router.get('/search', catchAsync(async (req, res) => {
+    const {q, category} = req.query;
+    if (!q && !category) {
+        return res.status(400).json({ message: "검색어를 입력하세요.." });
+    }
+    const results = await RestaurantService.getBySearch({
+        q,
+        category
+    });
+
+
+    res.status(200).json(results);
+}));
+
+/**
+ * @swagger
+ * /restaurants/search:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 맛집 검색
+ *     description: 키워드를 통해 카카오 api 맛집 정보를 검색합니다.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: 성공
+ *       400:
+ *         description: 검색어 누락
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.get('/kakao', catchAsync(async (req, res) => {
     const query = req.query.q;
     if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
-    const results = await RestaurantService.searchPlaces(query);
+    const results = await RestaurantService.searchKakao(query);
     res.status(200).json(results);
 }));
 

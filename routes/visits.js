@@ -45,8 +45,38 @@ router.post('/', catchAsync(async (req, res) => {
  */
 
 router.get('/', catchAsync(async (req, res) => {
-    const visits = await VisitService.getAllVisits();
+    const {userId, restaurantId} = req.query;
+
+    let visits;
+
+    if (userId) {
+        visits = await VisitService.getVisitByUser(userId);
+    }
+
+    else if (restaurantId) {
+        visits = await VisitService.getVisitByRestaurant(restaurantId);
+    }
+
+    else {
+        visits = await VisitService.getAllVisit();
+    }
+
     res.status(200).json(visits);
+}));
+
+router.get('/search', catchAsync(async (req, res) => {
+    const query = req.query.q;
+    if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
+    const results = await RestaurantService.searchPlaces(query);
+    res.status(200).json(results);
+}));
+
+
+router.get('/search', catchAsync(async (req, res) => {
+    const query = req.query.q;
+    if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
+    const results = await RestaurantService.searchPlaces(query);
+    res.status(200).json(results);
 }));
 
 /**
