@@ -5,6 +5,8 @@ const catchAsync = require('../utils/catchAsync');
 
 const router = express.Router();
 
+const upload = multer({ dest: 'images/temp/' });
+
 /**
  * @swagger
  * definitions:
@@ -185,7 +187,59 @@ router.get('/:id', catchAsync(async (req, res) => {
     };
 }));
 
-const upload = multer({ dest: 'images/temp/' });
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     tags:
+ *       - users
+ *     summary: 고수 정보 수정
+ *     description: 원하는 옵션을 선택적으로 사용해 고수의 정보를 수정합니다.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *       - in: formData
+ *         name: nickname
+ *         type: string
+ *       - in: formData
+ *         name: introduction
+ *         type: string
+ *       - in: formData
+ *         name: category
+ *         type: string
+ *       - in: formData
+ *         name: image
+ *         type: file
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.put('/:id', upload.single('image'), catchAsync(async (req, res) => {
+    let err = await userService.updateUser(req.params.id, req.body, req.file);
+    if (err == null) {
+        res.status(200).end();
+    } else {
+        res.status(err.statusCode).json({
+            message: err.message
+        });
+    }
+}))
+
+
 
 /**
  * @swagger

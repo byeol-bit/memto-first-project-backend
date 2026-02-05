@@ -57,12 +57,31 @@ async function searchUsers(nickname, category) {
 
 /**
  * @param {number} id 
+ * @param {{
+ *     nickname?: string,
+ *     profile_image?: string,
+ *     introduction?: string,
+ *     category?: string
+ * }} updateUserInput 
+ * @returns {Promise<number>}
+ */
+async function updateUser(id, updateUserInput) {
+    let [result] = await pool.query(
+        'UPDATE users SET ? WHERE id = ?',
+        [updateUserInput, id]
+    );
+
+    return result.affectedRows;
+}
+
+/**
+ * @param {number} id 
  * @param {string} filename 
  * @returns {Promise<number>}
  */
 async function updateProfileImageById(id, filename) {
     const [result] = await pool.query(
-        'UPDATE users SET profileImage = ? WHERE id = ?',
+        'UPDATE users SET profile_image = ? WHERE id = ?',
         [filename, id]
     );
 
@@ -75,7 +94,7 @@ async function updateProfileImageById(id, filename) {
  */
 async function getProfileImageById(id) {
     const [rows] = await pool.query(
-        'SELECT profileImage FROM users WHERE id = ?',
+        'SELECT profile_image FROM users WHERE id = ?',
         [id]
     );
 
@@ -86,5 +105,6 @@ module.exports.insertUser = insertUser;
 module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.updateUser = updateUser;
 module.exports.updateProfileImageById = updateProfileImageById;
 module.exports.getProfileImageById = getProfileImageById;
