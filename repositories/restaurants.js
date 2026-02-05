@@ -13,13 +13,34 @@ class RestaurantRepo {
         );
         return rows;
     }
+
+    static async find(restaurantId) {
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+        );
+        return rows;
+    }
+    
+    static async findBySearch(querys) {
+        let sql = "SELECT * FROM restaurants WHERE 1=1"
+        if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
+        if (querys.category) sql += ` AND category = '${querys.category}'`;
+
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+        );
+        return rows;
+    }
     
     static async findByKakaoId(kakaoId) {
-        const [rows] = await connection.query('SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]);
+        const [rows] = await connection.query(
+            'SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]
+        );
         return rows[0];
     }
 
     static async save(restaurantData) {
+        const { name, address, phone, category, x, y, kakao_id} = restaurantData;
         const [rows] = await connection.query(
             `INSERT INTO restaurants (name, address, phone_number, category, longitude, latitude, kakao_place_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
