@@ -7,6 +7,14 @@ const cors = require('cors');
 let server;
 
 function start() {
+<<<<<<< HEAD
+=======
+    // let pathname = url.parse(request.url).pathname;
+    // if (pathname === '/favicon.ico') {
+    //     response.writeHead(204);
+    //     return response.end();
+    // }
+>>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
     app.use(cors({ origin: [
         'http://localhost:5173',
         'https://memto-first-project-frontend.vercel.app/'
@@ -28,10 +36,18 @@ function start() {
             success: false,
             message: err.message || "서버 내부 에러가 발생했습니다."
         });
+<<<<<<< HEAD
     });
     app.listen(8080, '0.0.0.0', () => {
     console.log(`Server is listening on port 8080`);
+=======
+>>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
     });
+    app.listen(8080, '0.0.0.0', () => {
+    console.log(`Server is listening on port 8080`);
+});
+
+
 }
 
 module.exports = { start };
