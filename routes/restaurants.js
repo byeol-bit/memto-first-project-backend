@@ -29,6 +29,17 @@ router.post('/', catchAsync(async (req, res) => {
     });
 }));
 
+router.post('/', catchAsync(async (req, res) => {
+    const userData = req.body
+    const result = await RestaurantService.postRestaurants(userData)
+
+    res.status(201).json({
+        success: true,
+        message: "정보가 성공적으로 저장되었습니다.",
+        data: result
+    });
+}));
+
 /**
  * @swagger
  * /restaurants:
@@ -77,7 +88,7 @@ router.get('/:id', catchAsync(async (req, res) => {
  *     tags:
  *       - restaurants
  *     summary: 맛집 검색
- *     description: 키워드를 통해 카카오 api 맛집 정보를 검색합니다.
+ *     description: 키워드를 통해 맛집 정보를 검색합니다.
  *     produces:
  *       - application/json
  *     parameters:
@@ -95,10 +106,70 @@ router.get('/:id', catchAsync(async (req, res) => {
  */
 
 router.get('/search', catchAsync(async (req, res) => {
+    const {q, category} = req.query;
+    if (!q && !category) {
+        return res.status(400).json({ message: "검색어를 입력하세요.." });
+    }
+    const results = await RestaurantService.getBySearch({
+        q,
+        category
+    });
+
+
+    res.status(200).json(results);
+}));
+
+/**
+ * @swagger
+ * /restaurants/search:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 맛집 검색
+ *     description: 키워드를 통해 카카오 api 맛집 정보를 검색합니다.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: 성공
+ *       400:
+ *         description: 검색어 누락
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.get('/kakao', catchAsync(async (req, res) => {
     const query = req.query.q;
     if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
-    const results = await RestaurantService.searchPlaces(query);
+    const results = await RestaurantService.searchKakao(query);
     res.status(200).json(results);
+}));
+
+/**
+ * @swagger
+ * /restaurants:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 특정 식당 조회
+ *     description: id로 등록된 특정 식당을 반환합니다.
+ *     responses:
+ *       200:
+ *         description: 성공
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.get('/:id', catchAsync(async (req, res) => {
+    let {id} = req.params
+    id = parseInt(id)
+    const restaurants = await RestaurantService.getRestaurants(id);
+    res.status(200).json(restaurants);
 }));
 
 /**
