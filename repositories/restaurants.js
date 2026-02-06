@@ -8,9 +8,9 @@ class RestaurantRepo {
         return rows;
     }
 
-    static async find(restaurantId) {
+    static async find(kakaoId) {
         const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+            'SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]
         );
         return rows;
     }
