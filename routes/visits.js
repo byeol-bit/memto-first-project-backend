@@ -200,7 +200,7 @@ router.get('/likes/status', catchAsync(async (req, res) => {
  *       - application/json
  *     responses:
  *       200:
- *         description: 모든 유저 반환
+ *         description: 방문기록들
  *         schema:
  *           type: object
  *           properties:
