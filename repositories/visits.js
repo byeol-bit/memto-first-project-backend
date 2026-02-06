@@ -48,6 +48,15 @@ class VisitsRepo {
         );
         return rows.length > 0;
     }
+
+    static async getVisitsByFollowing(userId) {
+        const sql = `
+        SELECT * FROM visits
+        WHERE user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)
+        ORDER BY created_at DESC;`;
+        const [rows] = await connection.query(sql, userId);
+        return rows;
+    }
 }
 
 module.exports = VisitsRepo;

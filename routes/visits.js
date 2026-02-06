@@ -168,5 +168,63 @@ router.get('/likes/status', catchAsync(async (req, res) => {
     const isLiked = await VisitService.getLikeStatus(userId, visitId);
     res.status(200).json({ isLiked });
 }));
+/*
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NULL, 
+    restaurant_id INT NULL,
+    visit_date DATE,
+    review TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+*/
+/**
+ * @swagger
+ * /visits/following:
+ *   get:
+ *     tags:
+ *       - visits
+ *     summary: 팔로잉들의 방문기록
+ *     description: 팔로잉한 사람들의 방문기록을 최신순으로 정렬해 넘겨줍니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - userId
+ *           properties:
+ *             userId:
+ *               type: number
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 방문기록들
+ *         schema:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: number
+ *             user_id:
+ *               type: number
+ *             restaurant_id:
+ *               type: number
+ *             visit_date:
+ *               type: string
+ *             review:
+ *               type: string
+ *             created_at:
+ *               type: string
+ *             updated_at:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/following', catchAsync(async (req, res) => {
+    const { userId } = req.query;
+    const visits = await VisitService.getFollowingVisits(userId);
+    res.status(200).json(visits);
+}));
 
 module.exports = router;

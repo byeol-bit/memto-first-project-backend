@@ -33,6 +33,10 @@ class VisitService {
         return await VisitRepo.checkLike(userId, visitId);
     }
 
+    static async getFollowingVisits(userId) {
+        return await VisitRepo.getVisitsByFollowing(userId);
+    }
+
 //     static async searchPlaces(query) {
 //     const results = await KakaoApi.search(query);
     
