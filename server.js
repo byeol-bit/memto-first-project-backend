@@ -32,12 +32,7 @@ function start() {
     });
     app.listen(8080, '0.0.0.0', () => {
     console.log(`Server is listening on port 8080`);
-});
-
-
-}
-
-
+    });
 }
 
 module.exports = { start };
