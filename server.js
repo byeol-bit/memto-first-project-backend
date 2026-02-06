@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const url = require('url');
 const { swaggerUi, specs } = require('./swagger');
 const router = require('./routes/index');
 const cors = require('cors');
@@ -32,12 +31,7 @@ function start() {
     });
     app.listen(8080, '0.0.0.0', () => {
     console.log(`Server is listening on port 8080`);
-});
-
-
-}
-
-
+    });
 }
 
 module.exports = { start };
