@@ -70,20 +70,27 @@ async function getUserById(id) {
 }
 
 /**
- * @param {{nickname: string, category: string}} filters
+ * @param {{nickname: string, categories: string | string[]}} filters
  * @returns {Promise<User[] | Error>}
  */
 async function searchUsers(filters) {
-    let {nickname, category} = filters ?? {};
+    let {nickname, categories} = filters ?? {};
+    
+    if (categories == null) {
+        categories = []
+    } else if (!Array.isArray(categories)) {
+        categories = [categories]
+    }
+
     if (
         nickname != null && typeof nickname != 'string' ||
-        category != null && typeof category != 'string'
+        !categories.every(category => typeof category == 'string')
     ) {
         let err = new Error('타입이 올바르지 않습니다.');
         err.statusCode = 400;
         return err;
     } else {
-        const users = await userRepository.searchUsers(nickname, category);
+        const users = await userRepository.searchUsers(nickname, categories);
         return users;
     }
 }
