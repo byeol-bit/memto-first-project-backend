@@ -3,7 +3,8 @@ const pool = require('../database/mariadb');
 /**
  * @param {string} nickname 
  * @param {string} introduction 
- * @param {string} category 
+ * @param {string} category
+ * @param {string} password
  * @returns {Promise<number>}
  */
 async function insertUser(nickname, introduction, category, password) {

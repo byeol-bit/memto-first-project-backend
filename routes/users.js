@@ -33,28 +33,26 @@ const upload = multer({ dest: 'images/temp/' });
  *     tags:
  *       - users
  *     summary: 고수 등록
- *     description: 새로운 고수를 등록합니다.
+ *     description: 새로운 고수를 등록합니다. 이미지가 없어도 작동합니다.
  *     consumes:
- *       - application/json
+ *       - multipart/form-data
  *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - nickname
- *             - introduction
- *             - category
- *             - password
- *           properties:
- *             nickname:
- *               type: string
- *             introduction:
- *               type: string
- *             category:
- *               type: string
- *               enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
- *             password:
- *               type: string
+ *       - in: formData
+ *         name: nickname
+ *         type: string
+ *       - in: formData
+ *         name: introduction
+ *         type: string
+ *       - in: formData
+ *         name: category
+ *         type: string
+ *         enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
+ *       - in: formData
+ *         name: password
+ *         type: string
+ *       - in: formData
+ *         name: image
+ *         type: file
  *     produces:
  *       - application/json
  *     responses:
@@ -75,8 +73,8 @@ const upload = multer({ dest: 'images/temp/' });
  *       500:
  *         description: 서버 오류
 */
-router.post('/', catchAsync(async (req, res) => { 
-    let result = await userService.createUsers(req.body);
+router.post('/', upload.single('image'), catchAsync(async (req, res) => {
+    let result = await userService.createUsers(req.body, req.file);
     if (typeof result == 'number') {
         res.status(201).json({id: result});
     } else {
