@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const followService = require('../services/followService');
+const catchAsync = require('../utils/catchAsync');
 
 /**
  * @swagger
@@ -182,5 +183,91 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
+/**
+ * @swagger
+ * /follows/{id}/following-count:
+ *   get:
+ *     tags:
+ *       - follows
+ *     summary: 팔로잉 수
+ *     description: 팔로잉한 유저의 수를 반환합니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 팔로잉 수 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             count:
+ *               type: number
+ *       400:
+ *         description: 타입 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/:id/following-count', catchAsync(async (req, res) => {
+    let result = await followService.getFollowingCount(req.params.id);
+    if (typeof result == 'number') {
+        res.status(200).json({count: result});
+    } else {
+        res.status(result.statusCode).json({
+            message: result.message
+        });
+    }
+}));
+
+/**
+ * @swagger
+ * /follows/{id}/follower-count:
+ *   get:
+ *     tags:
+ *       - follows
+ *     summary: 팔로워 수
+ *     description: 팔로워의 수를 반환합니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 팔로워 수 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             count:
+ *               type: number
+ *       400:
+ *         description: 타입 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/:id/follower-count', catchAsync(async (req, res) => {
+    let result = await followService.getFollowerCount(req.params.id);
+    if (typeof result == 'number') {
+        res.status(200).json({count: result});
+    } else {
+        res.status(result.statusCode).json({
+            message: result.message
+        });
+    }
+}));
 
 module.exports = router;

@@ -42,6 +42,34 @@ async function isFollow(followerId, followingId) {
     return rows.length;
 }
 
+/**
+ * @param {number} followerId 
+ * @returns {Promise<number>}
+ */
+async function countFollwingByFollowerId(followerId) {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) as count FROM follows WHERE follower_id = ?',
+        followerId
+    )
+
+    return rows[0].count;
+}
+
+/**
+ * @param {number} followingId 
+ * @returns {Promise<number>}
+ */
+async function countFollowerByFollowingId(followingId) {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) as count FROM follows WHERE following_id = ?',
+        followingId
+    )
+
+    return rows[0].count;
+}
+
 module.exports.insertFollow = insertFollow;
 module.exports.deleteFollow = deleteFollow;
 module.exports.isFollow = isFollow;
+module.exports.countFollwingByFollowerId = countFollwingByFollowerId;
+module.exports.countFollowerByFollowingId = countFollowerByFollowingId;
