@@ -24,8 +24,6 @@ const upload = multer({ dest: 'images/temp/' });
  *         type: string
  *       createdAt:
  *         type: string
- *       updatedAt:
- *         type: string
 */
 
 /**
