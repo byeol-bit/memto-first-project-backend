@@ -7,9 +7,10 @@ const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
 
 /**
  * @param {{nickname: string, introduction: string, category: string, password: string}} createUserInput
+ * @param {Express.Multer.File | undefined} file
  * @returns {Promise<Error | null>}
  */
-async function createUsers(createUserInput) {
+async function createUsers(createUserInput, file) {
     const {nickname, introduction, category, password} = createUserInput ?? {};
 
     if (
@@ -26,7 +27,14 @@ async function createUsers(createUserInput) {
         const hashedPassword = await passwordUtil.hashPassword(password);
         let insertId = await userRepository.insertUser(nickname, introduction, category, hashedPassword);
         if (insertId != 0) {
-            return insertId;
+            if (!file) return insertId;
+
+            let result = await uploadProfileImage(insertId, file);
+            if (result instanceof Error) {
+                return result;
+            } else {
+                return insertId;
+            }
         } else {
             let err = new Error('이 유저를 추가할 수 없습니다.');
             err.statusCode = 400;
