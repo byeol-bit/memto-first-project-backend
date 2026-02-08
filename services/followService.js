@@ -99,6 +99,40 @@ async function isFollow(followerId, followingId) {
     };
 }
 
+/**
+ * @param {string} userId 
+ * @returns {Promise<number | FollowFailure>}
+ */
+async function getFollowingCount(userId) {
+    userId = parseInt(userId);
+    if (Number.isNaN(userId)) {
+        return {
+            statusCode: 400,
+            message: "id는 숫자여야 합니다."
+        }
+    }
+    let count = await followsRepository.countFollwingByFollowerId(userId);
+    return count;
+}
+
+/**
+ * @param {string} userId 
+ * @returns {Promise<number | FollowFailure>}
+ */
+async function getFollowerCount(userId) {
+    userId = parseInt(userId);
+    if (Number.isNaN(userId)) {
+        return {
+            statusCode: 400,
+            message: "id는 숫자여야 합니다."
+        }
+    }
+    let count = await followsRepository.countFollowerByFollowingId(userId);
+    return count;
+}
+
 module.exports.follow = follow;
 module.exports.unfollow = unfollow;
 module.exports.isFollow = isFollow;
+module.exports.getFollowingCount = getFollowingCount;
+module.exports.getFollowerCount = getFollowerCount;
