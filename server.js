@@ -14,7 +14,7 @@ function start() {
     // }
     app.use(cors({ origin: [
         'http://localhost:5173',
-        'https://memto-first-project-frontend.vercel.app/'
+        'https://memto-first-project-frontend.vercel.app'
     ]
     }))
     app.get('/', (req, res) => {

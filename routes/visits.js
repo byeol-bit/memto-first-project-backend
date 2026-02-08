@@ -5,7 +5,6 @@ const catchAsync = require('../utils/catchAsync');
 
 /**
  * @swagger
-<<<<<<< HEAD
  * definitions:
  *   visits:
  *     description: visits 형태에 대한 내용 입니다.
@@ -29,14 +28,11 @@ const catchAsync = require('../utils/catchAsync');
 
 /**
  * @swagger
-=======
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  * /visits:
  *   post:
  *     tags:
  *       - visits
  *     summary: 리뷰 등록
-<<<<<<< HEAD
  *     description: 새로운 리뷰를 등록합니다.
  *     consumes:
  *       - application/json
@@ -75,15 +71,6 @@ const catchAsync = require('../utils/catchAsync');
  *       500:
  *         description: 서버 오류
 */
-=======
- *     description: 리뷰를 등록합니다.
- *     responses:
- *       201:
- *         description: 성공
- *       500:
- *         description: 서버 오류
- */
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
 
 router.post('/', catchAsync(async (req, res) => {
     const visitData = req.body
@@ -104,7 +91,6 @@ router.post('/', catchAsync(async (req, res) => {
  *       - visits
  *     summary: 모든 리뷰 조회
  *     description: 등록된 모든 리뷰를 반환합니다.
-<<<<<<< HEAD
  *     produces:
  *       - application/json
  *     responses:
@@ -172,11 +158,6 @@ router.post('/', catchAsync(async (req, res) => {
  *           type: array
  *           items:
  *             $ref: "#/definitions/visits"
-=======
- *     responses:
- *       200:
- *         description: 성공
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  *       500:
  *         description: 서버 오류
  */
@@ -201,43 +182,19 @@ router.get('/', catchAsync(async (req, res) => {
     res.status(200).json(visits);
 }));
 
-<<<<<<< HEAD
-=======
-router.get('/search', catchAsync(async (req, res) => {
-    const query = req.query.q;
-    if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
-    const results = await RestaurantService.searchPlaces(query);
-    res.status(200).json(results);
-}));
-
-
-router.get('/search', catchAsync(async (req, res) => {
-    const query = req.query.q;
-    if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
-    const results = await RestaurantService.searchPlaces(query);
-    res.status(200).json(results);
-}));
-
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
 /**
  * @swagger
  * /visits/likes:
  *   post:
  *     tags:
  *       - visits
-<<<<<<< HEAD
  *     summary: 리뷰 좋아요 등록
  *     description: |
  *       특정 리뷰에 대해 좋아요 등록합니다.
-=======
- *     summary: 좋아요 등록
- *     description: 특정 리뷰에 대해 좋아요 등록합니다.
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  *     produces:
  *       - application/json
  *     parameters:
  *       - in: body
-<<<<<<< HEAD
  *         name: body
  *         required: true
  *         schema:
@@ -255,16 +212,6 @@ router.get('/search', catchAsync(async (req, res) => {
  *           properties:
  *             message:
  *               type: string
-=======
- *         name: uesrId
- *         type: number
- *       - in: body
- *         name: visitsId
- *         type: number
- *     responses:
- *       201:
- *         description: 좋아요 완료
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  *       500:
  *         description: 서버 오류
  */
@@ -275,7 +222,6 @@ router.post('/likes', catchAsync(async (req, res) => {
     res.status(201).json({ message: "좋아요 완료" });
 }));
 
-<<<<<<< HEAD
 /**
  * @swagger
  * /visits/likes:
@@ -310,31 +256,6 @@ router.post('/likes', catchAsync(async (req, res) => {
  *               type: string
  *       500:
  *         description: 서버 오류
-=======
-
-/**
- * @swagger
- * /restaurants/likes:
- *   delete:
- *     tags:
- *       - restaurants
- *     summary: 좋아요 취소
- *     description: 등록된 좋아요를 삭제합니다.
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: body
- *         name: uesrId
- *         type: number
- *       - in: body
- *         name: restaurantId
- *         type: number
- *   responses:
- *     201:
- *       description: 좋아요 완료
- *     500:
- *       description: 서버 오류
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  */
 
 router.delete('/likes', catchAsync(async (req, res) => {
@@ -342,17 +263,6 @@ router.delete('/likes', catchAsync(async (req, res) => {
     await VisitService.toggleLike(userId, visitId, false);
     res.status(201).json({ message: "좋아요 취소 완료" });
 }));
-<<<<<<< HEAD
-
-/**
- * @swagger
- * /visits/likes/status:
- *   get:
- *     tags:
- *       - visits
- *     summary: 좋아요 상태 확인
- *     description: 유저가 해당 리뷰를 좋아하는지 여부를 반환합니다.
-=======
 /**
  * @swagger
  * /restaurants/likes/status:
@@ -361,12 +271,10 @@ router.delete('/likes', catchAsync(async (req, res) => {
  *       - restaurants
  *     summary: 좋아요 상태 확인
  *     description: 유저가 해당 맛집을 좋아하는지 여부를 반환합니다.
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  *     parameters:
  *       - in: query
  *         name: userId
  *         required: true
-<<<<<<< HEAD
  *         type: number
  *       - in: query
  *         name: visitId
@@ -381,18 +289,6 @@ router.delete('/likes', catchAsync(async (req, res) => {
  *             isLiked:
  *               type: boolean
  *               example: true
-=======
- *         schema:
- *           type: integer
- *       - in: query
- *         name: restaurantId
- *         required: true
- *         schema:
- *           type: integer
- *   responses:
- *     200:
- *       description: 상태값 반환 성공
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
  */
 
 router.get('/likes/status', catchAsync(async (req, res) => {
@@ -459,8 +355,4 @@ router.get('/following', catchAsync(async (req, res) => {
     res.status(200).json(visits);
 }));
 
-<<<<<<< HEAD
 module.exports = router;
-=======
-module.exports = router;
->>>>>>> 0ac822cb4b74c23e303e1575602c057a44ff8a0f
