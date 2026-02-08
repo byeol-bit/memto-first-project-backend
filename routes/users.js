@@ -86,6 +86,79 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
 
 /**
  * @swagger
+ * /users/login:
+ *   post:
+ *     tags:
+ *       - users
+ *     summary: 로그인
+ *     description: 닉네임과 비밀번호로 로그인합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - nickname
+ *             - password
+ *           properties:
+ *             nickname:
+ *               type: string
+ *             password:
+ *               type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         headers:
+ *           description: jwt 발급
+ *           token:
+ *             schema:
+ *               type: string
+ *       400:
+ *         description: 잘못된 값 입력 또는 로그인 실패
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.post('/login', catchAsync(async (req, res) => {
+    let body = req.body ?? {};
+    let result = await userService.login(body.nickname, body.password);
+    if (typeof result === 'string') {
+        let cookieOption = {
+            path: '/',
+            httpOnly: true,
+            maxAge: 30 * 60 * 1000 // 30분
+        };
+        res.cookie("token", result, cookieOption).status(200).end();
+    } else {
+        res.status(result.statusCode).json(result.message);
+    }
+}));
+
+/**
+ * @swagger
+ * /users/logout:
+ *   post:
+ *     tags:
+ *       - users
+ *     summary: 로그아웃
+ *     description: 로그아웃합니다.
+ *     responses:
+ *       200:
+ *         description: 로그아웃 성공
+*/
+router.post('/logout', catchAsync(async (_, res) => {
+    res.clearCookie('token').status(200).end();
+}));
+
+/**
+ * @swagger
  * /users:
  *   get:
  *     tags:
@@ -146,6 +219,75 @@ router.get('/search', catchAsync(async (req, res) => {
     } else {
         res.status(200).json({users: result});
     }
+}));
+
+/**
+ * @swagger
+ * /users/check-nickname:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 닉네임 중복 확인
+ *     description: 닉네임 중복 여부를 확인합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - nickname
+ *           properties:
+ *             nickname:
+ *               type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 결과 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             isAvailable:
+ *               type: boolean
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/check-nickname', catchAsync(async (req, res) => { 
+    let result = await userService.existNickname(req.query.nickname);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({message: result.message});
+    } else {
+        res.status(200).json({isAvailable: !result});
+    }
+}));
+
+/**
+ * @swagger
+ * /users/categories:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 카테고리 목록
+ *     description: 카테고리 목록을 반환합니다.
+ *     responses:
+ *       200:
+ *         description: 성공
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+*/
+router.get('/categories', catchAsync(async (req, res) => {
+    const categories = userService.getCategories();
+    res.status(200).json(categories);
 }));
 
 /**

@@ -17,6 +17,18 @@ async function insertUser(nickname, introduction, category, password) {
 }
 
 /**
+ * @param {string} nickname
+ * @returns {Promise<{id: number, password: string}[]>}
+ */
+async function findAuthUserByNickname(nickname) {
+    const [results] = await pool.query(
+        'SELECT id, password FROM users WHERE nickname = ?',
+        nickname
+    )
+    return results[0];
+}
+
+/**
  * @returns {Promise<User[]>}
  */
 async function findUsers() {
@@ -54,6 +66,19 @@ async function searchUsers(nickname, categories) {
 
     let [results] = await pool.query(sql, values);
     return results;
+}
+
+/**
+ * @param {string} nickname 
+ * @returns {Promise<boolean>}
+ */
+async function existByNickname(nickname) {
+    let [results] = await pool.query(
+        'SELECT 1 FROM users WHERE nickname = ?',
+        nickname
+    );
+
+    return results.length > 0;
 }
 
 /**
@@ -103,9 +128,11 @@ async function getProfileImageById(id) {
 }
 
 module.exports.insertUser = insertUser;
+module.exports.findAuthUserByNickname = findAuthUserByNickname;
 module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.existByNickname = existByNickname;
 module.exports.updateUser = updateUser;
 module.exports.updateProfileImageById = updateProfileImageById;
 module.exports.getProfileImageById = getProfileImageById;
