@@ -40,11 +40,11 @@ class RestaurantRepo {
     }
 
     static async save(restaurantData) {
-        const { name, address, phone, category, x, y, kakao_id} = restaurantData;
+        const { name, address, phone_number, category, longitude, latitude, kakao_place_id} = restaurantData;
         const [rows] = await connection.query(
             `INSERT INTO restaurants (name, address, phone_number, category, longitude, latitude, kakao_place_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [name, address, phone, category, x, y, kakao_id]
+            [name, address, phone_number, category, longitude, latitude, kakao_place_id]
         );
         return rows
     }
