@@ -1,5 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const passwordUtil = require('../utils/password');
 const userRepository = require('../repositories/users');
 
@@ -44,6 +46,38 @@ async function createUsers(createUserInput, file) {
 }
 
 /**
+ * @param {string} nickname 
+ * @param {string} password 
+ * @returns {Promise<string | Error>}
+ */
+async function login(nickname, password) {
+    if (
+        typeof nickname != 'string' ||
+        typeof password != 'string'
+    ) {
+        let err = new Error('닉네임 또는 비밀번호의 타입이 올바르지 않습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+    let authUser = await userRepository.findAuthUserByNickname(nickname);
+    if (authUser == null) {
+        let err = new Error('닉네임 또는 비밀번호가 다릅니다.');
+        err.statusCode = 400;
+        return err;
+    } else if (passwordUtil.compare(password, authUser.password)) {
+        let token = jwt.sign(
+            {id: authUser.id},
+            process.env.JWT_KEY
+        )
+        return token;
+    } else {
+        let err = new Error('닉네임 또는 비밀번호가 다릅니다.');
+        err.statusCode = 400;
+        return err;
+    }
+}
+
+/**
  * @returns {Promise<User[]>}
  */
 async function getUsers() {
@@ -82,7 +116,8 @@ async function getUserById(id) {
  * @returns {Promise<User[] | Error>}
  */
 async function searchUsers(filters) {
-    let {nickname, categories} = filters ?? {};
+    let {nickname, category} = filters ?? {};
+    let categories = category;
     
     if (categories == null) {
         categories = []
@@ -101,6 +136,27 @@ async function searchUsers(filters) {
         const users = await userRepository.searchUsers(nickname, categories);
         return users;
     }
+}
+
+/**
+ * @param {string} nickname
+ * @returns {Promise<boolean | Error>}
+ */
+async function existNickname(nickname) {
+    if (typeof nickname !== 'string') {
+        let err = new Error('닉네임이 문자열이 아닙니다.');
+        err.statusCode = 400;
+        return err;
+    }
+    let exist = await userRepository.existByNickname(nickname);
+    return exist;
+}
+
+/**
+ * @returns {string[]}
+ */
+function getCategories() {
+    return CATEGORIES;
 }
 
 /**
@@ -233,9 +289,12 @@ async function getProfileImagePath(id) {
 }
 
 module.exports.createUsers = createUsers;
+module.exports.login = login;
 module.exports.getUsers = getUsers;
 module.exports.getUserById = getUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.existNickname = existNickname;
+module.exports.getCategories = getCategories;
 module.exports.updateUser = updateUser;
 module.exports.uploadProfileImage = uploadProfileImage;
 module.exports.getProfileImagePath = getProfileImagePath;
