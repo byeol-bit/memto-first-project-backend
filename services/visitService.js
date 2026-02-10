@@ -11,13 +11,13 @@ class VisitService {
         return visits;
     }
 
-    static async getVisitByUser() {
-        const visits = await VisitRepo.findVisitByUser();
+    static async getVisitByUser(userId) {
+        const visits = await VisitRepo.findVisitByUser(userId);
         return visits;
     }
 
-    static async getVisitByRestaurant() {
-        const visits = await VisitRepo.findVisitByRestaurant();
+    static async getVisitByRestaurant(restaurantId) {
+        const visits = await VisitRepo.findVisitByRestaurant(restaurantId);
         return visits;
     }
 
