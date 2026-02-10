@@ -68,8 +68,46 @@ async function countFollowerByFollowingId(followingId) {
     return rows[0].count;
 }
 
+/**
+ * @param {number} id
+ * @returns {Promise<{id: number, nickname: string, category: string, follow: boolean}[]>}
+ */
+async function getFollowingsById(id) {
+    const [rows] = await pool.query(`
+        SELECT u.id, u.nickname, u.category, (f2.follower_id IS NOT NULL) AS follow
+        FROM follows f
+        JOIN users u ON u.id = f.following_id
+        LEFT JOIN follows f2 ON f.following_id = f2.follower_id AND f.follower_id = f2.following_id
+        WHERE f.follower_id = ?;
+        `,
+        id
+    );
+
+    return rows;
+}
+
+/**
+ * @param {number} id
+ * @returns {Promise<Array<{id: number, nickname: string, category: string, follow: number}>>}
+ */
+async function getFollowersById(id) {
+    const [rows] = await pool.query(`
+        SELECT u.id, u.nickname, u.category, (f2.following_id IS NOT NULL) AS follow
+        FROM follows f
+        JOIN users u ON u.id = f.follower_id
+        LEFT JOIN follows f2 ON f.follower_id = f2.following_id AND f.following_id = f2.follower_id
+        WHERE f.following_id = ?;
+        `,
+        id
+    );
+
+    return rows;
+}
+
 module.exports.insertFollow = insertFollow;
 module.exports.deleteFollow = deleteFollow;
 module.exports.isFollow = isFollow;
 module.exports.countFollwingByFollowerId = countFollwingByFollowerId;
 module.exports.countFollowerByFollowingId = countFollowerByFollowingId;
+module.exports.getFollowingsById = getFollowingsById;
+module.exports.getFollowersById = getFollowersById;
