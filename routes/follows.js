@@ -270,4 +270,108 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
     }
 }));
 
+/**
+ * @swagger
+ * /followings/{id}:
+ *   get:
+ *     tags:
+ *       - follows
+ *     summary: 팔로잉 목록
+ *     description: 팔로잉한 목록을 가져옵니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 팔로잉 목록
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               nickname:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               follow:
+ *                 type: string
+ *       400:
+ *         description: 타입 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/followings/:id', catchAsync(async (req, res) => {
+    const id = parseInt(req.params.id);
+    let result = await followService.getFollowings(id);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({
+            message: result.message
+        });
+    } else {
+        res.status(200).json(result);
+    }
+}));
+
+/**
+ * @swagger
+ * /followers/{id}:
+ *   get:
+ *     tags:
+ *       - follows
+ *     summary: 팔로워 목록
+ *     description: 팔로워의 목록을 가져옵니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 팔로워 목록
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               nickname:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               follow:
+ *                 type: string
+ *       400:
+ *         description: 타입 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/followers/:id', catchAsync(async (req, res) => {
+    const id = parseInt(req.params.id);
+    let result = await followService.getFollowers(id);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({
+            message: result.message
+        });
+    } else {
+        res.status(200).json(result);
+    }
+}));
+
 module.exports = router;
