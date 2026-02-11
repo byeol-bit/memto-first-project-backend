@@ -15,8 +15,9 @@ class RestaurantRepo {
     }
 
     static async find(restaurantId) {
+        const queryId = parseInt(restaurantId)
         const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
+            'SELECT * FROM restaurants WHERE id = ?', [queryId]
         );
         return rows;
     }
@@ -63,6 +64,14 @@ class RestaurantRepo {
 
     static async removeLike(userId, restaurantId) {
         return await connection.query('DELETE FROM restaurant_likes WHERE user_id = ? AND restaurant_id = ?', [userId, restaurantId]);
+    }
+
+    static async findRestaurantRanking(limit) {
+
+        const queryLimit = parseInt(limit) || 10;
+        const [rows] = await connection.query(`SELECT r.*, COUNT(v.id) AS review_count FROM restaurants r JOIN visits v ON r.id = v.restaurant_id
+            GROUP BY r.id ORDER BY review_count DESC LIMIT ?`, [queryLimit]);
+        return rows
     }
 }
 

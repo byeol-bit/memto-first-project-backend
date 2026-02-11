@@ -7,14 +7,9 @@ const cors = require('cors');
 let server;
 
 function start() {
-    // let pathname = url.parse(request.url).pathname;
-    // if (pathname === '/favicon.ico') {
-    //     response.writeHead(204);
-    //     return response.end();
-    // }
     app.use(cors({ origin: [
         'http://localhost:5173',
-        'https://memto-first-project-frontend.vercel.app'
+        'https://memto-first-project-frontend.vercel.app/'
     ]
     }))
     app.get('/', (req, res) => {
@@ -25,7 +20,7 @@ function start() {
     app.use('/api', swaggerUi.serve, swaggerUi.setup(specs));
     app.use('', router);
 
-    app.use((err, req, res, next) => {
+    app.use((err, req, res, next) => {``
         console.error('--- ERROR 발생 ---');
         console.error(err.stack); 
 

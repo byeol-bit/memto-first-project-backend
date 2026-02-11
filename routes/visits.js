@@ -106,7 +106,7 @@ router.post('/', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /visits/:{userId}:
+ * /visits/{userId}:
  *   get:
  *     tags:
  *       - visits
@@ -135,7 +135,7 @@ router.post('/', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /visits/:{restaurantId}:
+ * /visits/{restaurantId}:
  *   get:
  *     tags:
  *       - visits
@@ -164,6 +164,7 @@ router.post('/', catchAsync(async (req, res) => {
 
 router.get('/', catchAsync(async (req, res) => {
     const {userId, restaurantId} = req.query;
+    console.log(req.query)
 
     let visits;
 
@@ -263,14 +264,15 @@ router.delete('/likes', catchAsync(async (req, res) => {
     await VisitService.toggleLike(userId, visitId, false);
     res.status(201).json({ message: "좋아요 취소 완료" });
 }));
+
 /**
  * @swagger
- * /restaurants/likes/status:
+ * /visits/likes/status?userId=''&visitId='':
  *   get:
  *     tags:
- *       - restaurants
+ *       - visits
  *     summary: 좋아요 상태 확인
- *     description: 유저가 해당 맛집을 좋아하는지 여부를 반환합니다.
+ *     description: 유저가 해당 리뷰를 좋아하는지 여부를 반환합니다.
  *     parameters:
  *       - in: query
  *         name: userId
@@ -295,64 +297,6 @@ router.get('/likes/status', catchAsync(async (req, res) => {
     const { userId, visitId } = req.query;
     const isLiked = await VisitService.getLikeStatus(userId, visitId);
     res.status(200).json({ isLiked });
-}));
-/*
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NULL, 
-    restaurant_id INT NULL,
-    visit_date DATE,
-    review TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-*/
-/**
- * @swagger
- * /visits/following:
- *   get:
- *     tags:
- *       - visits
- *     summary: 팔로잉들의 방문기록
- *     description: 팔로잉한 사람들의 방문기록을 최신순으로 정렬해 넘겨줍니다.
- *     consumes:
- *       - application/json
- *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - userId
- *           properties:
- *             userId:
- *               type: number
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: 방문기록들
- *         schema:
- *           type: object
- *           properties:
- *             id:
- *               type: number
- *             user_id:
- *               type: number
- *             restaurant_id:
- *               type: number
- *             visit_date:
- *               type: string
- *             review:
- *               type: string
- *             created_at:
- *               type: string
- *             updated_at:
- *               type: string
- *       500:
- *         description: 서버 오류
-*/
-router.get('/following', catchAsync(async (req, res) => {
-    const { userId } = req.query;
-    const visits = await VisitService.getFollowingVisits(userId);
-    res.status(200).json(visits);
 }));
 
 module.exports = router;

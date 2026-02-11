@@ -51,6 +51,10 @@ class RestaurantService {
     static async getLikeStatus(userId, restaurantId) {
         return await RestaurantRepo.checkLike(userId, restaurantId);
     }
+
+    static async getRestaurantRanking(limit) {
+        return await RestaurantRepo.findRestaurantRanking(limit);
+    }
 }
 
 module.exports = RestaurantService;
