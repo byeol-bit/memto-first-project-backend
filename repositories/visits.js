@@ -20,15 +20,17 @@ class VisitsRepo {
     }
     
     static async findVisitByUser(userId) {
+        let queryId = parseInt(userId)
         const [rows] = await connection.query(
-            'SELECT * FROM visits WHERE user_id = ?', [userId]
+            'SELECT * FROM visits WHERE user_id = ?', [queryId]
         );
         return rows;
     }
 
     static async findVisitByRestaurant(restaurantId) {
+        let queryId = parseInt(restaurantId)
         const [rows] = await connection.query(
-            'SELECT * FROM visits WHERE restaurant_id = ?', [restaurantId]
+            'SELECT * FROM visits WHERE restaurant_id = ?', [queryId]
         );
         return rows;
     }
