@@ -67,7 +67,8 @@ async function login(loginId, password) {
     } else if (passwordUtil.compare(password, authUser.password)) {
         let token = jwt.sign(
             {id: authUser.id},
-            process.env.JWT_KEY
+            process.env.JWT_KEY,
+            { expiresIn: '30m' }
         )
         return token;
     } else {

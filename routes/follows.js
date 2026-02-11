@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const followService = require('../services/followService');
 const catchAsync = require('../utils/catchAsync');
+const jwtUtil = require('../utils/jwt');
 
 /**
  * @swagger
@@ -10,7 +11,9 @@ const catchAsync = require('../utils/catchAsync');
  *     tags:
  *       - follows
  *     summary: 팔로우
- *     description: 상대를 팔로우합니다. 
+ *     description: jwt의 id로 상대를 팔로우합니다.
+ *     security:
+ *       - jwtCookie: []
  *     consumes:
  *       - application/json
  *     parameters:
@@ -18,14 +21,6 @@ const catchAsync = require('../utils/catchAsync');
  *         name: id
  *         type: number
  *         required: true
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - myId
- *           properties:
- *             myId:
- *               type: number
  *     produces:
  *       - application/json
  *     responses:
@@ -50,8 +45,9 @@ const catchAsync = require('../utils/catchAsync');
 */
 router.post('/:id', async (req, res) => {
     try {
+        let token = jwtUtil.decode(req.cookies.token);
         let followingId = parseInt(req.params.id);
-        let followResult = await followService.follow(req.body.myId, followingId);
+        let followResult = await followService.follow(token?.id, followingId);
         if (followResult.statusCode != 200) {
             res.status(followResult.statusCode).json({ message: followResult.message });
         } else {
@@ -70,7 +66,9 @@ router.post('/:id', async (req, res) => {
  *     tags:
  *       - follows
  *     summary: 언팔로우
- *     description: 상대를 언팔로우합니다.
+ *     description: jwt의 id로 상대를 언팔로우합니다.
+ *     security:
+ *       - jwtCookie: []
  *     consumes:
  *       - application/json
  *     parameters:
@@ -78,14 +76,6 @@ router.post('/:id', async (req, res) => {
  *         name: id
  *         type: number
  *         required: true
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - myId
- *           properties:
- *             myId:
- *               type: number
  *     produces:
  *       - application/json
  *     responses:
@@ -110,8 +100,9 @@ router.post('/:id', async (req, res) => {
 */
 router.delete('/:id', async (req, res) => {
     try {
+        let token = jwtUtil.decode(req.cookies.token);
         let followingId = parseInt(req.params.id);
-        let unfollowResult = await followService.unfollow(req.body.myId, followingId);
+        let unfollowResult = await followService.unfollow(token?.id, followingId);
         if (unfollowResult.statusCode != 200) {
             res.status(unfollowResult.statusCode).json({ message: unfollowResult.message });
         } else {
@@ -125,26 +116,21 @@ router.delete('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /follows:
+ * /follows/{id}:
  *   get:
  *     tags:
  *       - follows
  *     summary: 팔로우 상태 확인
  *     description: 팔로우 여부를 확인합니다.
+ *     security:
+ *       - jwtCookie: []
  *     consumes:
  *       - application/json
  *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - followerId
- *             - followingId
- *           properties:
- *             followerId:
- *               type: number
- *             followingId:
- *               type: number
+ *       - in: path
+ *         name: id
+ *         type: number
+ *         required: true
  *     produces:
  *       - application/json
  *     responses:
@@ -165,10 +151,11 @@ router.delete('/:id', async (req, res) => {
  *       500:
  *         description: 서버 오류
 */
-router.get('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
-        let {followerId, followingId} = req.body;
-        let isFollowResult = await followService.isFollow(followerId, followingId);
+        let token = jwtUtil.decode(req.cookies.token);
+        let id = parseInt(req.params.id);
+        let isFollowResult = await followService.isFollow(token?.id, id);
         if (isFollowResult.statusCode != 200) {
             res.status(isFollowResult.statusCode).json({
                 message: isFollowResult.message
@@ -272,12 +259,14 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /followings/{id}:
+ * /follows/followings/{id}:
  *   get:
  *     tags:
  *       - follows
  *     summary: 팔로잉 목록
  *     description: 팔로잉한 목록을 가져옵니다.
+ *     security:
+ *       - jwtCookie: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -311,8 +300,9 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *         description: 서버 오류
 */
 router.get('/followings/:id', catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
     const id = parseInt(req.params.id);
-    let result = await followService.getFollowings(id);
+    let result = await followService.getFollowings(token?.id, id);
     if (result instanceof Error) {
         res.status(result.statusCode).json({
             message: result.message
@@ -324,12 +314,14 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /followers/{id}:
+ * /follows/followers/{id}:
  *   get:
  *     tags:
  *       - follows
  *     summary: 팔로워 목록
  *     description: 팔로워의 목록을 가져옵니다.
+ *     security:
+ *       - jwtCookie: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -363,8 +355,9 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *         description: 서버 오류
 */
 router.get('/followers/:id', catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
     const id = parseInt(req.params.id);
-    let result = await followService.getFollowers(id);
+    let result = await followService.getFollowers(token?.id, id);
     if (result instanceof Error) {
         res.status(result.statusCode).json({
             message: result.message

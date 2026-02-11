@@ -69,36 +69,38 @@ async function countFollowerByFollowingId(followingId) {
 }
 
 /**
+ * @param {number} myId
  * @param {number} id
  * @returns {Promise<{id: number, nickname: string, category: string, follow: boolean}[]>}
  */
-async function getFollowingsById(id) {
+async function getFollowingsById(myId, id) {
     const [rows] = await pool.query(`
         SELECT u.id, u.nickname, u.category, (f2.follower_id IS NOT NULL) AS follow
         FROM follows f
         JOIN users u ON u.id = f.following_id
-        LEFT JOIN follows f2 ON f.following_id = f2.follower_id AND f.follower_id = f2.following_id
+        LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.following_id
         WHERE f.follower_id = ?;
         `,
-        id
+        [myId, id]
     );
 
     return rows;
 }
 
 /**
+ * @param {number} myId
  * @param {number} id
  * @returns {Promise<Array<{id: number, nickname: string, category: string, follow: number}>>}
  */
-async function getFollowersById(id) {
+async function getFollowersById(myId, id) {
     const [rows] = await pool.query(`
         SELECT u.id, u.nickname, u.category, (f2.following_id IS NOT NULL) AS follow
         FROM follows f
         JOIN users u ON u.id = f.follower_id
-        LEFT JOIN follows f2 ON f.follower_id = f2.following_id AND f.following_id = f2.follower_id
+        LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.follower_id
         WHERE f.following_id = ?;
         `,
-        id
+        [myId, id]
     );
 
     return rows;

@@ -23,7 +23,10 @@ const followsRepository = require('../repositories/follows');
  * @returns {FollowFailure}
  */
 function validateFollowIds(followerId, followingId) {
-    if (typeof followerId != 'number' || typeof followingId != 'number') {
+    if (
+        typeof followerId != 'number' || typeof followingId != 'number' ||
+        Number.isNaN(followerId) || Number.isNaN(followingId)
+    ) {
         return {
             statusCode: 400,
             message: "invaild value"
@@ -132,18 +135,19 @@ async function getFollowerCount(userId) {
 }
 
 /**
+ * @param {number} myId
  * @param {number} id
  * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow: boolean}>>}
  */
-async function getFollowings(id) {
-    if (Number.isNaN(id)) {
+async function getFollowings(myId, id) {
+    if (Number.isNaN(myId) || Number.isNaN(id)) {
         return {
             statusCode: 400,
             message: "id는 숫자여야 합니다."
         }
     }
 
-    let followings = await followsRepository.getFollowingsById(id);
+    let followings = await followsRepository.getFollowingsById(myId, id);
 
     for(let f of followings) {
         f.follow = Boolean(f.follow);
@@ -153,18 +157,19 @@ async function getFollowings(id) {
 }
 
 /**
+ * @param {number} myId
  * @param {number} id
  * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow: boolean}>>}
  */
-async function getFollowers(id) {
-        if (Number.isNaN(id)) {
+async function getFollowers(myId, id) {
+        if (Number.isNaN(myId) || Number.isNaN(id)) {
         return {
             statusCode: 400,
             message: "id는 숫자여야 합니다."
         }
     }
 
-    let followers = await followsRepository.getFollowersById(id);
+    let followers = await followsRepository.getFollowersById(myId, id);
 
     for(let f of followers) {
         f.follow = Boolean(f.follow);
