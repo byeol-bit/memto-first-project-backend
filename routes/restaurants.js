@@ -108,7 +108,12 @@ router.post('/', catchAsync(async (req, res) => {
  *         schema:
  *           type: array
  *           items:
- *             $ref: "#/definitions/restaurants"
+ *             allOf:
+ *               - $ref: "#/definitions/restaurants"
+ *               - type: object
+ *                 properties:
+ *                   experCount:
+ *                     type: number
  *       500:
  *         description: 서버 오류
  */

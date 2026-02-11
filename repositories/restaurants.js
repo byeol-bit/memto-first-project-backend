@@ -7,10 +7,11 @@ class RestaurantRepo {
         );
         return rows;
     }
+
     static async findAll() {
-        const [rows] = await connection.query(
-            'SELECT * FROM restaurants ORDER BY created_at DESC'
-        );
+        const [rows] = await connection.query(`SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount
+            FROM restaurants r LEFT JOIN visits v ON r.id = v.restaurant_id
+            GROUP BY r.id ORDER BY r.created_at DESC`);
         return rows;
     }
 
@@ -68,7 +69,7 @@ class RestaurantRepo {
 
     static async findRestaurantRanking(limit) {
 
-        const queryLimit = parseInt(limit) || 10;
+        const queryLimit = parseInt(limit) || 5;
         const [rows] = await connection.query(`SELECT r.*, COUNT(v.id) AS review_count FROM restaurants r JOIN visits v ON r.id = v.restaurant_id
             GROUP BY r.id ORDER BY review_count DESC LIMIT ?`, [queryLimit]);
         return rows
