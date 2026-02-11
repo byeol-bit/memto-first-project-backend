@@ -38,15 +38,14 @@ const upload = multer({ dest: 'images/temp/' });
  *       - multipart/form-data
  *     parameters:
  *       - in: formData
+ *         name: loginId
+ *         type: string
+ *       - in: formData
  *         name: nickname
  *         type: string
  *       - in: formData
  *         name: introduction
  *         type: string
- *       - in: formData
- *         name: category
- *         type: string
- *         enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
  *       - in: formData
  *         name: password
  *         type: string
@@ -91,7 +90,7 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *     tags:
  *       - users
  *     summary: 로그인
- *     description: 닉네임과 비밀번호로 로그인합니다.
+ *     description: 로그인 아이디와 비밀번호로 로그인합니다.
  *     consumes:
  *       - application/json
  *     parameters:
@@ -99,10 +98,10 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *         schema:
  *           type: object
  *           required:
- *             - nickname
+ *             - loginId
  *             - password
  *           properties:
- *             nickname:
+ *             loginId:
  *               type: string
  *             password:
  *               type: string
@@ -128,7 +127,7 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
 */
 router.post('/login', catchAsync(async (req, res) => {
     let body = req.body ?? {};
-    let result = await userService.login(body.nickname, body.password);
+    let result = await userService.login(body.loginId, body.password);
     if (typeof result === 'string') {
         let cookieOption = {
             path: '/',

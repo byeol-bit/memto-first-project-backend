@@ -1,29 +1,30 @@
 const pool = require('../database/mariadb');
 
 /**
+ * @param {string} loginId
  * @param {string} nickname 
  * @param {string} introduction 
  * @param {string} category
  * @param {string} password
  * @returns {Promise<number>}
  */
-async function insertUser(nickname, introduction, category, password) {
+async function insertUser(loginId, nickname, introduction, category, password) {
     const [result] = await pool.query(
-        'INSERT INTO users(nickname, introduction, category, password) VALUES(?, ?, ?, ?)',
-        [nickname, introduction, category, password]
+        'INSERT INTO users(login_id, nickname, introduction, category, password) VALUES(?, ?, ?, ?, ?)',
+        [loginId, nickname, introduction, category, password]
     );
 
     return result.insertId;
 }
 
 /**
- * @param {string} nickname
+ * @param {string} loginId
  * @returns {Promise<{id: number, password: string}[]>}
  */
-async function findAuthUserByNickname(nickname) {
+async function findAuthUserByNickname(loginId) {
     const [results] = await pool.query(
-        'SELECT id, password FROM users WHERE nickname = ?',
-        nickname
+        'SELECT id, password FROM users WHERE login_id = ?',
+        loginId
     )
     return results[0];
 }

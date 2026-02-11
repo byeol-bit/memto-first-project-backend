@@ -8,18 +8,17 @@ const userRepository = require('../repositories/users');
 const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
 
 /**
- * @param {{nickname: string, introduction: string, category: string, password: string}} createUserInput
+ * @param {{loginId: string, nickname: string, introduction: string, password: string}} createUserInput
  * @param {Express.Multer.File | undefined} file
  * @returns {Promise<Error | null>}
  */
 async function createUsers(createUserInput, file) {
-    const {nickname, introduction, category, password} = createUserInput ?? {};
+    const {loginId, nickname, introduction, password} = createUserInput ?? {};
 
     if (
+        typeof loginId !== 'string' ||
         typeof nickname !== 'string' ||
         typeof introduction !== 'string' ||
-        typeof category !== 'string' ||
-        !CATEGORIES.includes(category) ||
         typeof password !== 'string'
     ) {
         let err = new Error('입력값이 비어있거나, 타입이 올바르지 않습니다.');
@@ -27,8 +26,9 @@ async function createUsers(createUserInput, file) {
         return err;
     } else {
         const hashedPassword = await passwordUtil.hashPassword(password);
-        let insertId = await userRepository.insertUser(nickname, introduction, category, hashedPassword);
-        if (insertId != 0) {
+        let category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)]; // 카테고리 다양성을 위한 임시 코드
+        let insertId = await userRepository.insertUser(loginId, nickname, introduction, category, hashedPassword);
+        if (insertId) {
             if (!file) return insertId;
 
             let result = await uploadProfileImage(insertId, file);
@@ -46,20 +46,20 @@ async function createUsers(createUserInput, file) {
 }
 
 /**
- * @param {string} nickname 
+ * @param {string} loginId 
  * @param {string} password 
  * @returns {Promise<string | Error>}
  */
-async function login(nickname, password) {
+async function login(loginId, password) {
     if (
-        typeof nickname != 'string' ||
+        typeof loginId != 'string' ||
         typeof password != 'string'
     ) {
         let err = new Error('닉네임 또는 비밀번호의 타입이 올바르지 않습니다.');
         err.statusCode = 400;
         return err;
     }
-    let authUser = await userRepository.findAuthUserByNickname(nickname);
+    let authUser = await userRepository.findAuthUserByNickname(loginId);
     if (authUser == null) {
         let err = new Error('닉네임 또는 비밀번호가 다릅니다.');
         err.statusCode = 400;
