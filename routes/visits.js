@@ -13,7 +13,7 @@ const catchAsync = require('../utils/catchAsync');
  *       id:
  *         type: number
  *       user_id:
- *         type: numer
+ *         type: number
  *       restaurants_id:
  *         type: number
  *       visit_date:
@@ -90,7 +90,7 @@ router.post('/', catchAsync(async (req, res) => {
  *     tags:
  *       - visits
  *     summary: 모든 리뷰 조회
- *     description: 등록된 모든 리뷰를 반환합니다.
+ *     description: 등록된 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
  *     produces:
  *       - application/json
  *     responses:
@@ -99,7 +99,31 @@ router.post('/', catchAsync(async (req, res) => {
  *         schema:
  *           type: array
  *           items:
- *             $ref: "#/definitions/visits"
+ *             allOf:
+ *               - $ref: "#/definitions/visits"
+ *               - type: object
+ *             properties:
+ *               restaurant:
+ *                 tpye: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *                   kakao-place_id:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                   updated_at:
+ *                     type: string
  *       500:
  *         description: 서버 오류
  */
@@ -112,7 +136,7 @@ router.post('/', catchAsync(async (req, res) => {
  *       - visits
  *     summary: userId 기반 리뷰 조회
  *     description: |
- *       해당 유저가 작성한 모든 리뷰를 반환합니다.
+ *       해당 유저가 작성한 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
  *       전체 반환, 식당id 기반과 같은 url을 사용하고 있으니 쿼리에 주의가 필요합니다.
  *     consumes:
  *       - application/json
@@ -128,7 +152,31 @@ router.post('/', catchAsync(async (req, res) => {
  *         schema:
  *           type: array
  *           items:
- *             $ref: "#/definitions/visits"
+ *             allOf:
+ *               - $ref: "#/definitions/visits"
+ *               - type: object
+ *             properties:
+ *               restaurant:
+ *                 tpye: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *                   kakao-place_id:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                   updated_at:
+ *                     type: string
  *       500:
  *         description: 서버 오류
  */
@@ -141,7 +189,7 @@ router.post('/', catchAsync(async (req, res) => {
  *       - visits
  *     summary: restaurantId 기반 리뷰 조회
  *     description: |
- *       해당 식당에 작성한 모든 리뷰를 반환합니다.
+ *       해당 식당에 작성한 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
  *       전체 반환, 유저id 기반과 같은 url을 사용하고 있으니 쿼리에 주의가 필요합니다.
  *     consumes:
  *       - application/json
@@ -157,7 +205,31 @@ router.post('/', catchAsync(async (req, res) => {
  *         schema:
  *           type: array
  *           items:
- *             $ref: "#/definitions/visits"
+ *             allOf:
+ *               - $ref: "#/definitions/visits"
+ *               - type: object
+ *             properties:
+ *               restaurant:
+ *                 tpye: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *                   kakao-place_id:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                   updated_at:
+ *                     type: string
  *       500:
  *         description: 서버 오류
  */
