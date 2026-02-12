@@ -92,18 +92,6 @@ router.post('/', catchAsync(async (req, res) => {
     });
 }));
 
-
-router.post('/', catchAsync(async (req, res) => {
-    const userData = req.body
-    const result = await RestaurantService.postRestaurants(userData)
-
-    res.status(201).json({
-        success: true,
-        message: "정보가 성공적으로 저장되었습니다.",
-        data: result
-    });
-}));
-
 /**
  * @swagger
  * /restaurants:
@@ -120,7 +108,12 @@ router.post('/', catchAsync(async (req, res) => {
  *         schema:
  *           type: array
  *           items:
- *             $ref: "#/definitions/restaurants"
+ *             allOf:
+ *               - $ref: "#/definitions/restaurants"
+ *               - type: object
+ *                 properties:
+ *                   experCount:
+ *                     type: number
  *       500:
  *         description: 서버 오류
  */
@@ -130,9 +123,40 @@ router.get('/', catchAsync(async (req, res) => {
     res.status(200).json(restaurants);
 }));
 
+
 /**
  * @swagger
- * /restaurants/search:
+ * /restaurants/top?limit='':
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 리뷰 수 기준 탑 {limit} 만큼 확인
+ *     description: 쿼리 limit 수 만큼 상위 순위를 반환합니다. 디폴트는 5입니다.
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: true
+ *         type: number
+ *     responses:
+ *       200:
+ *         description: 순위 반환 성공
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: "#/definitions/restaurants"
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.get('/top', catchAsync(async (req, res) => {
+    const { limit } = req.query;
+    const restaurants = await RestaurantService.getRestaurantRanking(limit);
+    res.status(200).json(restaurants);
+}));
+
+/**
+ * @swagger
+ * /restaurants/search?q=''&category='':
  *   get:
  *     tags:
  *       - restaurants
@@ -140,6 +164,7 @@ router.get('/', catchAsync(async (req, res) => {
  *     description: |
  *       키워드를 통해 맛집 정보를 검색합니다.
  *       "q 또는 category 파라미터가 최소 하나는 필요합니다."
+ *       q는 이름 기반 category는 쓰기나름
  *     consumes:
  *       - application/json
  *     produces:
@@ -186,7 +211,7 @@ router.get('/search', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /restaurants/kakao:
+ * /restaurants/kakao?q='':
  *   get:
  *     tags:
  *       - restaurants
@@ -371,7 +396,7 @@ router.delete('/likes', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /restaurants/likes/status:
+ * /restaurants/likes/status?userId=''&restaurantId='':
  *   get:
  *     tags:
  *       - restaurants
