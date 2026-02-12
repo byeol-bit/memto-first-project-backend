@@ -16,7 +16,7 @@ class RestaurantRepo {
     }
 
     static async find(restaurantId) {
-        const queryId = parseInt(restaurantId)
+        let queryId = parseInt(restaurantId)
         const [rows] = await connection.query(
             'SELECT * FROM restaurants WHERE id = ?', [queryId]
         );
@@ -35,8 +35,9 @@ class RestaurantRepo {
     }
     
     static async findByKakaoId(kakaoId) {
+        let queryId = parseInt(kakaoId)
         const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE kakao_place_id = ?', [kakaoId]
+            'SELECT * FROM restaurants WHERE kakao_place_id = ?', [queryId]
         );
         return rows[0];
     }

@@ -1,8 +1,27 @@
 const connection = require('../database/mariadb'); 
 
 class VisitsRepo {
-        static async save(visitData) {
 
+    static formatVisit(rows) {
+        const { r_name, r_address, r_phone_number, r_category, r_latitude, r_longitude, r_kakao_place_id,
+            r_created_at, r_updated_at, ...visitData } = rows;
+        return {
+            ...visitData,
+            restaurant: {
+                name: r_name,
+                address: r_address,
+                phone_number: r_phone_number,
+                category: r_category,
+                latitude: r_latitude,
+                longtitde: r_longitude,
+                kakao_place_id: r_kakao_place_id,
+                created_at: r_created_at,
+                updated_at: r_updated_at
+            }
+        }
+    }
+
+    static async save(visitData) {
         const {userId, restaurantId, visitDate, review} = visitData
         const [rows] = await connection.query(
             `INSERT INTO visits (user_id, restaurant_id, visit_date, review) 
@@ -14,23 +33,34 @@ class VisitsRepo {
 
     static async findAll() {
         const [rows] = await connection.query(
-            'SELECT * FROM visits ORDER BY created_at DESC'
+            `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
+            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
+            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at
+            FROM visits v JOIN restaurants r ON v.restaurant_id = r.id ORDER BY v.created_at DESC`
         );
-        return rows;
+        return rows.map(this.formatVisit);
     }
     
     static async findVisitByUser(userId) {
+        let queryId = parseInt(userId)
         const [rows] = await connection.query(
-            'SELECT * FROM visits WHERE user_id = ?', [userId]
+            `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
+            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
+            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at
+            FROM visits v JOIN restaurants r ON v.restaurant_id = r.id WHERE user_id = ? ORDER BY v.created_at DESC`, [queryId]
         );
-        return rows;
+        return rows.map(this.formatVisit);
     }
 
     static async findVisitByRestaurant(restaurantId) {
+        let queryId = parseInt(restaurantId)
         const [rows] = await connection.query(
-            'SELECT * FROM visits WHERE restaurant_id = ?', [restaurantId]
+            `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
+            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
+            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at
+            FROM visits v JOIN restaurants r ON v.restaurant_id = r.id WHERE restaurant_id = ? ORDER BY v.created_at DESC`, [queryId]
         );
-        return rows;
+        return rows.map(this.formatVisit);
     }
 
     static async addLike(userId, visitId) {
