@@ -23,3 +23,12 @@ module.exports = {
     swaggerUi,
     specs
 };
+
+/**
+ * @swagger
+ * securityDefinitions:
+ *   jwtCookie:
+ *     type: apiKey
+ *     in: cookie
+ *     name: token
+ */
