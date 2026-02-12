@@ -130,7 +130,7 @@ router.post('/', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /visits/{userId}:
+ * /visits?userId=""":
  *   get:
  *     tags:
  *       - visits
@@ -183,7 +183,7 @@ router.post('/', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /visits/{restaurantId}:
+ * /visits?restaurantId="":
  *   get:
  *     tags:
  *       - visits
