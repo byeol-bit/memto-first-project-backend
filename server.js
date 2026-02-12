@@ -8,9 +8,10 @@ let server;
 
 function start() {
     app.use(cors({ origin: [
-        'http://localhost:5173',
-        'https://memto-first-project-frontend.vercel.app/'
-    ]
+            'http://localhost:5173',
+            'https://memto-first-project-frontend.vercel.app'
+        ],
+        credentials: true
     }))
     app.get('/', (req, res) => {
         res.send('server running!!');
