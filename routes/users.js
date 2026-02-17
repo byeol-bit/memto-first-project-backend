@@ -222,6 +222,49 @@ router.get('/search', catchAsync(async (req, res) => {
 
 /**
  * @swagger
+ * /users/check-id:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 아이디 중복 확인
+ *     description: 로그인 아이디의 중복 여부를 확인합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: loginId
+ *         type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 결과 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             isAvailable:
+ *               type: boolean
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/check-id', catchAsync(async (req, res) => { 
+    let result = await userService.existLoginId(req.query.loginId);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({message: result.message});
+    } else {
+        res.status(200).json({isAvailable: !result});
+    }
+}));
+
+/**
+ * @swagger
  * /users/check-nickname:
  *   get:
  *     tags:
@@ -231,14 +274,9 @@ router.get('/search', catchAsync(async (req, res) => {
  *     consumes:
  *       - application/json
  *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - nickname
- *           properties:
- *             nickname:
- *               type: string
+ *       - in: query
+ *         name: nickname
+ *         type: string
  *     produces:
  *       - application/json
  *     responses:

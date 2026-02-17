@@ -70,6 +70,19 @@ async function searchUsers(nickname, categories) {
 }
 
 /**
+ * @param {string} loginId 
+ * @returns {Promise<boolean>}
+ */
+async function existByLoginId(loginId) {
+    let [results] = await pool.query(
+        'SELECT 1 FROM users WHERE login_id = ?',
+        loginId
+    );
+
+    return results.length > 0;
+}
+
+/**
  * @param {string} nickname 
  * @returns {Promise<boolean>}
  */
@@ -133,6 +146,7 @@ module.exports.findAuthUserByNickname = findAuthUserByNickname;
 module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.existByLoginId = existByLoginId;
 module.exports.existByNickname = existByNickname;
 module.exports.updateUser = updateUser;
 module.exports.updateProfileImageById = updateProfileImageById;

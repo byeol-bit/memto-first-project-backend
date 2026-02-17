@@ -140,6 +140,20 @@ async function searchUsers(filters) {
 }
 
 /**
+ * @param {string} loginId
+ * @returns {Promise<boolean | Error>}
+ */
+async function existLoginId(loginId) {
+    if (typeof loginId !== 'string') {
+        let err = new Error('아이디가 문자열이 아닙니다.');
+        err.statusCode = 400;
+        return err;
+    }
+    let exist = await userRepository.existByLoginId(loginId);
+    return exist;
+}
+
+/**
  * @param {string} nickname
  * @returns {Promise<boolean | Error>}
  */
@@ -294,6 +308,7 @@ module.exports.login = login;
 module.exports.getUsers = getUsers;
 module.exports.getUserById = getUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.existLoginId = existLoginId;
 module.exports.existNickname = existNickname;
 module.exports.getCategories = getCategories;
 module.exports.updateUser = updateUser;
