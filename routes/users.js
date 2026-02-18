@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const userService = require('../services/userService');
 const catchAsync = require('../utils/catchAsync');
+const jwtUtil = require('../utils/jwt');
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ const upload = multer({ dest: 'images/temp/' });
  *     properties:
  *       id:
  *         type: number
+ *       loginId:
+ *         type: string
  *       nickname:
  *         type: string
  *       introduction:
@@ -132,6 +135,8 @@ router.post('/login', catchAsync(async (req, res) => {
         let cookieOption = {
             path: '/',
             httpOnly: true,
+            sameSite: "none",
+            secure: true,
             maxAge: 30 * 60 * 1000 // 30분
         };
         res.cookie("token", result, cookieOption).status(200).end();
@@ -362,18 +367,17 @@ router.get('/:id', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /users:
  *   put:
  *     tags:
  *       - users
  *     summary: 고수 정보 수정
  *     description: 원하는 옵션을 선택적으로 사용해 고수의 정보를 수정합니다.
+ *     security:
+ *       - jwtCookie: []
  *     consumes:
  *       - multipart/form-data
  *     parameters:
- *       - in: path
- *         name: id
- *         type: number
  *       - in: formData
  *         name: nickname
  *         type: string
@@ -398,11 +402,24 @@ router.get('/:id', catchAsync(async (req, res) => {
  *           properties:
  *             message:
  *               type: string
+ *       401:
+ *         description: jwt 토큰 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
  *       500:
  *         description: 서버 오류
 */
-router.put('/:id', upload.single('image'), catchAsync(async (req, res) => {
-    let err = await userService.updateUser(req.params.id, req.body, req.file);
+router.put('/', upload.single('image'), catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
+    if (token == null) {
+        return res.status(401).json({
+            message: "잘못된 토큰입니다."
+        })
+    }
+    let err = await userService.updateUser(token.id, req.body, req.file);
     if (err == null) {
         res.status(200).end();
     } else {
@@ -412,7 +429,69 @@ router.put('/:id', upload.single('image'), catchAsync(async (req, res) => {
     }
 }))
 
-
+/**
+ * @swagger
+ * /users/password:
+ *   patch:
+ *     tags:
+ *       - users
+ *     summary: 비밀번호 변경
+ *     description: 현재 비밀번호와 변경할 비밀번호를 입력해, 비밀번호를 변경합니다.
+ *     security:
+ *       - jwtCookie: []
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - password
+ *             - newPassword
+ *           properties:
+ *             password:
+ *               type: string
+ *             newPassword:
+ *               type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       401:
+ *         description: jwt 토큰 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.patch('/password', catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
+    if (token == null) {
+        return res.status(401).json({
+            message: "잘못된 토큰입니다."
+        })
+    }
+    let body = req.body ?? {};
+    let err = await userService.updatePassword(token.id, body.password, body.newPassword);
+    if (err == null) {
+        res.status(200).end();
+    } else {
+        res.status(err.statusCode).json({
+            message: err.message
+        });
+    }
+}))
 
 /**
  * @swagger

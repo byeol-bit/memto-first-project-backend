@@ -6,6 +6,30 @@ const passwordUtil = require('../utils/password');
 const userRepository = require('../repositories/users');
 
 const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
+const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
+
+/**
+ * @param {User[]} users
+ * @returns {User[]}
+ */
+function convertUsersToCamelCase(users) {
+    for(let i = 0; i < users.length; i++) {
+        users[i] = convertUserToCamelCase(users[i]);
+    }
+    return users;
+}
+
+function convertUserToCamelCase(user) {
+    const {id, login_id, nickname, introduction, category, created_at} = user;
+    return {
+        id,
+        loginId: login_id,
+        nickname,
+        introduction,
+        category,
+        createdAt: created_at
+    };
+}
 
 /**
  * @param {{loginId: string, nickname: string, introduction: string, password: string}} createUserInput
@@ -55,16 +79,16 @@ async function login(loginId, password) {
         typeof loginId != 'string' ||
         typeof password != 'string'
     ) {
-        let err = new Error('닉네임 또는 비밀번호의 타입이 올바르지 않습니다.');
+        let err = new Error('아이디 또는 비밀번호의 타입이 올바르지 않습니다.');
         err.statusCode = 400;
         return err;
     }
-    let authUser = await userRepository.findAuthUserByNickname(loginId);
+    let authUser = await userRepository.findAuthUserByLoginId(loginId);
     if (authUser == null) {
         let err = new Error('닉네임 또는 비밀번호가 다릅니다.');
         err.statusCode = 400;
         return err;
-    } else if (passwordUtil.compare(password, authUser.password)) {
+    } else if (await passwordUtil.compare(password, authUser.password)) {
         let token = jwt.sign(
             {id: authUser.id},
             process.env.JWT_KEY,
@@ -83,7 +107,7 @@ async function login(loginId, password) {
  */
 async function getUsers() {
     let users = await userRepository.findUsers();
-    return users;
+    return convertUsersToCamelCase(users);
 }
 
 /**
@@ -100,7 +124,7 @@ async function getUserById(id) {
 
     let results = await userRepository.findUserById(id);
     if (results.length === 1) {
-        return results[0];
+        return convertUserToCamelCase(results[0]);
     } else if (results.length === 0) {
         let err = new Error('해당하는 유저가 존재하지 않습니다.');
         err.statusCode = 400;
@@ -134,8 +158,8 @@ async function searchUsers(filters) {
         err.statusCode = 400;
         return err;
     } else {
-        const users = await userRepository.searchUsers(nickname, categories);
-        return users;
+        let users = await userRepository.searchUsers(nickname, categories);
+        return convertUsersToCamelCase(users);
     }
 }
 
@@ -199,21 +223,22 @@ async function updateUser(id, updateUserInput, file) {
 
     let newUpdateUserInput = {};
 
-    let ext = file.originalname.split('.').at(-1);
-    if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
-        let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
-        err.statusCode = 400;
-        return err;
-    }
-
-    let path = 'images/users';
-    let filename = `${id}.${ext}`;
-
     if (file) {
+        let ext = file.originalname.split('.').at(-1);
+        if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
+            let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
+            err.statusCode = 400;
+            return err;
+        }
+
+        let path = 'images/users';
+        let filename = `${id}.${ext}`;
+
         await fs.mkdir(path, { recursive: true });
         await fs.rename(`${file.path}`, `${path}/${filename}`);
         newUpdateUserInput.profile_image = filename;
     }
+    
 
     for (const [key, value] of Object.entries(updateUserInput)) {
         if (value != null) {
@@ -238,7 +263,50 @@ async function updateUser(id, updateUserInput, file) {
     return null;
 }
 
-const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
+/**
+ * @param {number} id 
+ * @param {string} password 
+ * @param {string} newPassword 
+ * @returns {Promise<null | Error>}
+ */
+async function updatePassword(id, password, newPassword) {
+    if (Number.isNaN(id)) {
+        let err = new Error('id의 타입이 올바르지 않습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+    if (typeof password !== 'string' || typeof newPassword !== 'string') {
+        let err = new Error('비밀번호는 문자열이어야 합니다.');
+        err.statusCode = 400;
+        return err;
+    }
+
+    let obj = await userRepository.findPasswordById(id);
+
+    if (!obj) {
+        let err = new Error('유효하지 않은 id입니다.');
+        err.statusCode = 400;
+        return err;
+    }
+
+    if (!passwordUtil.compare(password, obj.password)) {
+        let err = new Error('비밀번호가 올바르지 않습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+
+    newPassword = await passwordUtil.hashPassword(newPassword);
+    let affectedRows = await userRepository.updatePassword(id, newPassword);
+
+    if (affectedRows > 0) {
+        return null;
+    } else {
+        let err = new Error('비밀번호를 업데이트할 수 없습니다.');
+        err.statusCode = 500;
+        return err;
+    }
+}
+
 
 // 프로필 이미지를 업로드
 /**
@@ -312,5 +380,6 @@ module.exports.existLoginId = existLoginId;
 module.exports.existNickname = existNickname;
 module.exports.getCategories = getCategories;
 module.exports.updateUser = updateUser;
+module.exports.updatePassword = updatePassword;
 module.exports.uploadProfileImage = uploadProfileImage;
 module.exports.getProfileImagePath = getProfileImagePath;

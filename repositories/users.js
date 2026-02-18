@@ -21,7 +21,7 @@ async function insertUser(loginId, nickname, introduction, category, password) {
  * @param {string} loginId
  * @returns {Promise<{id: number, password: string}[]>}
  */
-async function findAuthUserByNickname(loginId) {
+async function findAuthUserByLoginId(loginId) {
     const [results] = await pool.query(
         'SELECT id, password FROM users WHERE login_id = ?',
         loginId
@@ -33,7 +33,7 @@ async function findAuthUserByNickname(loginId) {
  * @returns {Promise<User[]>}
  */
 async function findUsers() {
-    const [results] = await pool.query('SELECT id, nickname, introduction, category, created_at FROM users');
+    const [results] = await pool.query('SELECT id, login_id, nickname, introduction, category, created_at FROM users');
     return results;
 }
 
@@ -43,8 +43,17 @@ async function findUsers() {
  * @returns {Promise<User[]>}
  */
 async function findUserById(id) {
-    const [results] = await pool.query('SELECT id, nickname, introduction, category, created_at FROM users WHERE id = ?', id);
+    const [results] = await pool.query('SELECT id, login_id, nickname, introduction, category, created_at FROM users WHERE id = ?', id);
     return results;
+}
+
+/**
+ * @param {number} id 
+ * @returns {Promise<{ password: string } | undefined>}
+ */
+async function findPasswordById(id) {
+    const [results] = await pool.query('SELECT password FROM users WHERE id = ?', [id]);
+    return results[0];
 }
 
 /**
@@ -53,7 +62,7 @@ async function findUserById(id) {
  * @returns {Promise<User[]>}
  */
 async function searchUsers(nickname, categories) {
-    let sql = 'SELECT id, nickname, introduction, category, created_at FROM users WHERE 1=1';
+    let sql = 'SELECT id, login_id, nickname, introduction, category, created_at FROM users WHERE 1=1';
     let values = [];
 
     if (nickname) {
@@ -116,6 +125,20 @@ async function updateUser(id, updateUserInput) {
 
 /**
  * @param {number} id 
+ * @param {string} password 
+ * @returns 
+ */
+async function updatePassword(id, password) {
+    let [result] = await pool.query(
+        'UPDATE users SET password = ? WHERE id = ?',
+        [password, id]
+    );
+
+    return result.affectedRows;
+}
+
+/**
+ * @param {number} id 
  * @param {string} filename 
  * @returns {Promise<number>}
  */
@@ -142,12 +165,14 @@ async function getProfileImageById(id) {
 }
 
 module.exports.insertUser = insertUser;
-module.exports.findAuthUserByNickname = findAuthUserByNickname;
+module.exports.findAuthUserByLoginId = findAuthUserByLoginId;
 module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
+module.exports.findPasswordById = findPasswordById;
 module.exports.searchUsers = searchUsers;
 module.exports.existByLoginId = existByLoginId;
 module.exports.existByNickname = existByNickname;
 module.exports.updateUser = updateUser;
+module.exports.updatePassword = updatePassword;
 module.exports.updateProfileImageById = updateProfileImageById;
 module.exports.getProfileImageById = getProfileImageById;
