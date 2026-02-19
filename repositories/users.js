@@ -139,6 +139,19 @@ async function updatePassword(id, password) {
 
 /**
  * @param {number} id 
+ * @returns {Promise<number>}
+ */
+async function deleteUser(id) {
+    let [result] = await pool.query(
+        'DELETE FROM users WHERE id = ?',
+        [id]
+    );
+
+    return result.affectedRows;
+}
+
+/**
+ * @param {number} id 
  * @param {string} filename 
  * @returns {Promise<number>}
  */
@@ -174,5 +187,6 @@ module.exports.existByLoginId = existByLoginId;
 module.exports.existByNickname = existByNickname;
 module.exports.updateUser = updateUser;
 module.exports.updatePassword = updatePassword;
+module.exports.deleteUser = deleteUser;
 module.exports.updateProfileImageById = updateProfileImageById;
 module.exports.getProfileImageById = getProfileImageById;

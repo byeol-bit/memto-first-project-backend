@@ -495,6 +495,56 @@ router.patch('/password', catchAsync(async (req, res) => {
 
 /**
  * @swagger
+ * /users:
+ *   delete:
+ *     tags:
+ *       - users
+ *     summary: 유저 삭제
+ *     description: 유저를 삭제합니다. 회원을 탈퇴합니다.
+ *     security:
+ *       - jwtCookie: []
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: OK
+ *       401:
+ *         description: jwt 토큰 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       404:
+ *         description: 삭제할 유저 없음
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.delete('/', catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
+    if (token == null) {
+        return res.status(401).json({
+            message: "잘못된 토큰입니다."
+        })
+    }
+
+    let err = await userService.deleteUser(token.id);
+    if (err == null) {
+        res.status(200).end();
+    } else {
+        res.status(err.statusCode).json({
+            message: err.message
+        })
+    }
+}))
+
+/**
+ * @swagger
  * /users/{id}/image:
  *   put:
  *     tags:

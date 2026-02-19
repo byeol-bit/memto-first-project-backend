@@ -307,8 +307,22 @@ async function updatePassword(id, password, newPassword) {
     }
 }
 
+/**
+ * @param {number} id 
+ * @returns {Promise<null | Error>}
+ */
+async function deleteUser(id) {
+    let affectedRows = await userRepository.deleteUser(id);
 
-// 프로필 이미지를 업로드
+    if (affectedRows > 0) {
+        return null;
+    } else {
+        let err = new Error('유저를 삭제하는 데 실패했습니다.');
+        err.statusCode = 404;
+        return err;
+    }
+}
+
 /**
  * 
  * @param {number} id
@@ -381,5 +395,6 @@ module.exports.existNickname = existNickname;
 module.exports.getCategories = getCategories;
 module.exports.updateUser = updateUser;
 module.exports.updatePassword = updatePassword;
+module.exports.deleteUser = deleteUser;
 module.exports.uploadProfileImage = uploadProfileImage;
 module.exports.getProfileImagePath = getProfileImagePath;
