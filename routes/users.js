@@ -118,6 +118,11 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *           token:
  *             schema:
  *               type: string
+ *         schema:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
  *       400:
  *         description: 잘못된 값 입력 또는 로그인 실패
  *         schema:
@@ -131,7 +136,10 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
 router.post('/login', catchAsync(async (req, res) => {
     let body = req.body ?? {};
     let result = await userService.login(body.loginId, body.password);
-    if (typeof result === 'string') {
+    if (result instanceof Error) {
+        res.status(result.statusCode).json(result.message);
+    } else {
+        const {token, id} = result;
         let cookieOption = {
             path: '/',
             httpOnly: true,
@@ -139,9 +147,7 @@ router.post('/login', catchAsync(async (req, res) => {
             secure: true,
             maxAge: 30 * 60 * 1000 // 30분
         };
-        res.cookie("token", result, cookieOption).status(200).end();
-    } else {
-        res.status(result.statusCode).json(result.message);
+        res.cookie("token", token, cookieOption).status(200).json({id}).end();
     }
 }));
 
