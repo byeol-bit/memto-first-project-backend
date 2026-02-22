@@ -72,7 +72,7 @@ async function createUsers(createUserInput, file) {
 /**
  * @param {string} loginId 
  * @param {string} password 
- * @returns {Promise<string | Error>}
+ * @returns {Promise<{ token: string, id: number } | Error>}
  */
 async function login(loginId, password) {
     if (
@@ -94,7 +94,7 @@ async function login(loginId, password) {
             process.env.JWT_KEY,
             { expiresIn: '30m' }
         )
-        return token;
+        return { token, id: authUser.id };
     } else {
         let err = new Error('닉네임 또는 비밀번호가 다릅니다.');
         err.statusCode = 400;
