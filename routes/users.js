@@ -139,7 +139,7 @@ router.post('/login', catchAsync(async (req, res) => {
     if (result instanceof Error) {
         res.status(result.statusCode).json(result.message);
     } else {
-        const {token, id} = result;
+        const {token, id, nickname} = result;
         let cookieOption = {
             path: '/',
             httpOnly: true,
@@ -147,7 +147,7 @@ router.post('/login', catchAsync(async (req, res) => {
             secure: true,
             maxAge: 30 * 60 * 1000 // 30분
         };
-        res.cookie("token", token, cookieOption).status(200).json({id}).end();
+        res.cookie("token", token, cookieOption).status(200).json({id, nickname}).end();
     }
 }));
 

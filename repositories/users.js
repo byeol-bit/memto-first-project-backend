@@ -19,11 +19,11 @@ async function insertUser(loginId, nickname, introduction, category, password) {
 
 /**
  * @param {string} loginId
- * @returns {Promise<{id: number, password: string}[]>}
+ * @returns {Promise<{id: number, nickname: string, password: string}[]>}
  */
 async function findAuthUserByLoginId(loginId) {
     const [results] = await pool.query(
-        'SELECT id, password FROM users WHERE login_id = ?',
+        'SELECT id, nickname, password FROM users WHERE login_id = ?',
         loginId
     )
     return results[0];
