@@ -42,6 +42,15 @@ function validateFollowIds(followerId, followingId) {
 }
 
 /**
+ * @param {number} page
+ * @param {number} limit
+ * @returns {number}
+ */
+function getPageStart(page, limit) {
+    return (page - 1) * limit;
+}
+
+/**
  * @param {number} followerId
  * @param {number} followingId
  * @returns {Promise<FollowSuccess | FollowFailure>}
@@ -137,21 +146,26 @@ async function getFollowerCount(userId) {
 /**
  * @param {number} myId
  * @param {number} id
+ * @param {string} page
+ * @param {string} limit 
  * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow?: boolean}>>}
  */
-async function getFollowings(myId, id) {
-    if (Number.isNaN(id)) {
+async function getFollowings(myId, id, page, limit) {
+    page = parseInt(page);
+    limit = parseInt(limit);
+    if (Number.isNaN(id) || Number.isNaN(page) || Number.isNaN(limit)) {
         return {
             statusCode: 400,
-            message: "id는 숫자여야 합니다."
+            message: "id, page, limit는 숫자여야 합니다."
         }
-    } console.log(myId);
+    }
 
+    const offset = getPageStart(page, limit);
     let followings;
     if (myId == null) {
-        followings = await followsRepository.getFollowingsById(id);
+        followings = await followsRepository.getFollowingsById(id, offset, limit);
     } else {
-        followings = await followsRepository.getFollowingsAndFollowById(myId, id);
+        followings = await followsRepository.getFollowingsAndFollowById(myId, id, offset, limit);
         for(let f of followings) {
             f.follow = Boolean(f.follow);
         }
@@ -163,21 +177,26 @@ async function getFollowings(myId, id) {
 /**
  * @param {number} myId
  * @param {number} id
+ * @param {string} page
+ * @param {string} limit 
  * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow?: boolean}>>}
  */
-async function getFollowers(myId, id) {
-    if (Number.isNaN(id)) {
+async function getFollowers(myId, id, page, limit) {
+    page = parseInt(page);
+    limit = parseInt(limit);
+    if (Number.isNaN(id) || Number.isNaN(page) || Number.isNaN(limit)) {
         return {
             statusCode: 400,
-            message: "id는 숫자여야 합니다."
+            message: "id, page, limit는 숫자여야 합니다."
         }
     }
 
+    const offset = getPageStart(page, limit);
     let followers;
     if (myId == null) {
-        followers = await followsRepository.getFollowersById(id);
+        followers = await followsRepository.getFollowersById(id, offset, limit);
     } else {
-        followers = await followsRepository.getFollowersAndFollowById(myId, id);
+        followers = await followsRepository.getFollowersAndFollowById(myId, id, offset, limit);
         for(let f of followers) {
             f.follow = Boolean(f.follow);
         }
