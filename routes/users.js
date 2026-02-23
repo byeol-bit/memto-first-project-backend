@@ -233,6 +233,48 @@ router.get('/search', catchAsync(async (req, res) => {
 
 /**
  * @swagger
+ * /users/random:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 랜덤 유저 반환
+ *     description: 원하는 수의 랜덤 유저를 반환합니다. limit가 없을 경우 3명을 반환합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 랜덤 유저 반환
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: "#/definitions/User"
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/random', catchAsync(async (req, res) => {
+    let result = await userService.getRandomUsers(req.query.limit ?? 3);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({message: result.message});
+    } else {
+        res.status(200).json({users: result});
+    }
+}))
+
+/**
+ * @swagger
  * /users/check-id:
  *   get:
  *     tags:

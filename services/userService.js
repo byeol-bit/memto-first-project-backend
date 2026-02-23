@@ -164,6 +164,22 @@ async function searchUsers(filters) {
 }
 
 /**
+ * @param {string} limit
+ * @returns {Promise<User[] | Error>}
+ */
+async function getRandomUsers(limit) {
+    limit = parseInt(limit);
+    if (Number.isNaN(limit)) {
+        let err = new Error('');
+        err.statusCode = 400;
+        return err;
+    }
+
+    let users = userRepository.randomUsers(limit);
+    return convertUsersToCamelCase(users);
+}
+
+/**
  * @param {string} loginId
  * @returns {Promise<boolean | Error>}
  */
@@ -390,6 +406,7 @@ module.exports.login = login;
 module.exports.getUsers = getUsers;
 module.exports.getUserById = getUserById;
 module.exports.searchUsers = searchUsers;
+module.exports.getRandomUsers = getRandomUsers;
 module.exports.existLoginId = existLoginId;
 module.exports.existNickname = existNickname;
 module.exports.getCategories = getCategories;
