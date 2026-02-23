@@ -297,6 +297,48 @@ router.get('/random', catchAsync(async (req, res) => {
 
 /**
  * @swagger
+ * /users/me:
+ *   get:
+ *     tags:
+ *       - users
+ *     summary: 본인의 정보
+ *     description: 본인의 정보를 가져옵니다.
+ *     security:
+ *       - jwtCookie: []
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 본인의 정보 반환
+ *         schema:
+ *           $ref: "#/definitions/User"
+ *       401:
+ *         description: jwt 토큰 오류
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *       500:
+ *         description: 서버 오류
+*/
+router.get('/me', catchAsync(async (req, res) => {
+    let token = jwtUtil.decode(req.cookies.token);
+    if (token == null) {
+        return res.status(401).json({
+            message: "잘못된 토큰입니다."
+        })
+    }
+    let result = await userService.getUserById(token.id);
+    if (result instanceof Error) {
+        res.status(result.statusCode).json({message: result.message});
+    } else {
+        res.status(200).json(result);
+    }
+}))
+
+/**
+ * @swagger
  * /users/check-id:
  *   get:
  *     tags:
