@@ -79,6 +79,20 @@ async function searchUsers(nickname, categories) {
 }
 
 /**
+ * 
+ * @param {number} limit 
+ * @returns {Promise<User[]>}
+ */
+async function randomUsers(limit) {
+    let [results] = await pool.query(
+        'SELECT id, login_id, nickname, introduction, category, created_at FROM users ORDER BY RAND() LIMIT ?',
+        limit
+    );
+
+    return results;
+}
+
+/**
  * @param {string} loginId 
  * @returns {Promise<boolean>}
  */
@@ -183,6 +197,7 @@ module.exports.findUsers = findUsers;
 module.exports.findUserById = findUserById;
 module.exports.findPasswordById = findPasswordById;
 module.exports.searchUsers = searchUsers;
+module.exports.randomUsers = randomUsers;
 module.exports.existByLoginId = existByLoginId;
 module.exports.existByNickname = existByNickname;
 module.exports.updateUser = updateUser;
