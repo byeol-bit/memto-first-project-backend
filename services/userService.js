@@ -32,6 +32,15 @@ function convertUserToCamelCase(user) {
 }
 
 /**
+ * @param {number} page
+ * @param {number} limit
+ * @returns {number}
+ */
+function getPageStart(page, limit) {
+    return (page - 1) * limit;
+}
+
+/**
  * @param {{loginId: string, nickname: string, introduction: string, password: string}} createUserInput
  * @param {Express.Multer.File | undefined} file
  * @returns {Promise<Error | null>}
@@ -103,10 +112,20 @@ async function login(loginId, password) {
 }
 
 /**
+ * @param {string} page 
+ * @param {string} limit
  * @returns {Promise<User[]>}
  */
-async function getUsers() {
-    let users = await userRepository.findUsers();
+async function getUsers(page, limit) {
+    page = parseInt(page);
+    limit = parseInt(limit);
+    if (Number.isNaN(page) || Number.isNaN(limit)) {
+        let err = new Error('offset 또는 limit의 타입이 올바르지 않습니다.');
+        err.statusCode = 400;
+        return err;
+    }
+    const offset = getPageStart(page, limit);
+    let users = await userRepository.findUsers(offset, limit);
     return convertUsersToCamelCase(users);
 }
 
@@ -137,10 +156,12 @@ async function getUserById(id) {
 }
 
 /**
+ * @param {string} page 
+ * @param {string} limit
  * @param {{nickname: string, categories: string | string[]}} filters
  * @returns {Promise<User[] | Error>}
  */
-async function searchUsers(filters) {
+async function searchUsers(filters, page, limit) {
     let {nickname, category} = filters ?? {};
     let categories = category;
     
@@ -150,15 +171,20 @@ async function searchUsers(filters) {
         categories = [categories]
     }
 
+    page = parseInt(page);
+    limit = parseInt(limit);
+
     if (
         nickname != null && typeof nickname != 'string' ||
-        !categories.every(category => typeof category == 'string')
+        !categories.every(category => typeof category == 'string') ||
+        Number.isNaN(page) || Number.isNaN(limit)
     ) {
         let err = new Error('타입이 올바르지 않습니다.');
         err.statusCode = 400;
         return err;
     } else {
-        let users = await userRepository.searchUsers(nickname, categories);
+        const offset = getPageStart(page, limit);
+        let users = await userRepository.searchUsers(nickname, categories, offset, limit);
         return convertUsersToCamelCase(users);
     }
 }
