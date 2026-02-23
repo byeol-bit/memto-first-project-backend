@@ -30,13 +30,17 @@ async function findAuthUserByLoginId(loginId) {
 }
 
 /**
+ * @param {number} offset
+ * @param {number} limit 
  * @returns {Promise<User[]>}
  */
-async function findUsers() {
-    const [results] = await pool.query('SELECT id, login_id, nickname, introduction, category, created_at FROM users');
+async function findUsers(offset, limit) {
+    const [results] = await pool.query(
+        'SELECT id, login_id, nickname, introduction, category, created_at FROM users LIMIT ?, ?',
+        [offset, limit]
+    );
     return results;
 }
-
 
 /**
  * @param {number} id 
@@ -59,9 +63,11 @@ async function findPasswordById(id) {
 /**
  * @param {string | null | undefined} nickname 
  * @param {string[]} categories
+ * @param {number} offset
+ * @param {number} limit 
  * @returns {Promise<User[]>}
  */
-async function searchUsers(nickname, categories) {
+async function searchUsers(nickname, categories, offset, limit) {
     let sql = 'SELECT id, login_id, nickname, introduction, category, created_at FROM users WHERE 1=1';
     let values = [];
 
@@ -73,6 +79,9 @@ async function searchUsers(nickname, categories) {
         sql += ' AND category IN (?)';
         values.push(categories);
     }
+    
+    sql += ' LIMIT ?, ?';
+    values.push(offset, limit);
 
     let [results] = await pool.query(sql, values);
     return results;

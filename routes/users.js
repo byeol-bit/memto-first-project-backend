@@ -174,7 +174,16 @@ router.post('/logout', catchAsync(async (_, res) => {
  *     tags:
  *       - users
  *     summary: 모든 고수 조회
- *     description: 등록된 모든 고수들을 반환합니다.
+ *     description: 등록된 모든 고수들을 반환합니다. 페이지는 1부터 시작합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         type: string
+ *       - in: query
+ *         name: limit
+ *         type: string
  *     produces:
  *       - application/json
  *     responses:
@@ -184,11 +193,18 @@ router.post('/logout', catchAsync(async (_, res) => {
  *           type: array
  *           items:
  *             $ref: "#/definitions/User"
+ *       400:
+ *         description: 잘못된 값 입력
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
  *       500:
  *         description: 서버 오류
 */
-router.get('/', catchAsync(async (_, res) => {
-    let users = await userService.getUsers();
+router.get('/', catchAsync(async (req, res) => {
+    let users = await userService.getUsers(req.query.page ?? 1, req.query.limit ?? 10);
     res.status(200).json(users);
 }));
 
@@ -199,7 +215,7 @@ router.get('/', catchAsync(async (_, res) => {
  *     tags:
  *       - users
  *     summary: 고수 검색
- *     description: 닉네임, 카테고리에 맞는 고수를 검색합니다.
+ *     description: 닉네임, 카테고리에 맞는 고수를 검색합니다. 페이지는 1부터 시작합니다.
  *     consumes:
  *       - application/json
  *     parameters:
@@ -210,6 +226,12 @@ router.get('/', catchAsync(async (_, res) => {
  *         name: category
  *         type: string
  *         enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
+ *       - in: query
+ *         name: page
+ *         type: string
+ *       - in: query
+ *         name: limit
+ *         type: string
  *     produces:
  *       - application/json
  *     responses:
@@ -223,11 +245,11 @@ router.get('/', catchAsync(async (_, res) => {
  *         description: 서버 오류
 */
 router.get('/search', catchAsync(async (req, res) => { 
-    let result = await userService.searchUsers(req.query);
+    let result = await userService.searchUsers(req.query, req.query.page ?? 1, req.query.limit ?? 10);
     if (result instanceof Error) {
         res.status(result.statusCode).json({message: result.message});
     } else {
-        res.status(200).json({users: result});
+        res.status(200).json(result);
     }
 }));
 
