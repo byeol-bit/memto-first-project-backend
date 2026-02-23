@@ -137,20 +137,24 @@ async function getFollowerCount(userId) {
 /**
  * @param {number} myId
  * @param {number} id
- * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow: boolean}>>}
+ * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow?: boolean}>>}
  */
 async function getFollowings(myId, id) {
-    if (Number.isNaN(myId) || Number.isNaN(id)) {
+    if (Number.isNaN(id)) {
         return {
             statusCode: 400,
             message: "id는 숫자여야 합니다."
         }
-    }
+    } console.log(myId);
 
-    let followings = await followsRepository.getFollowingsById(myId, id);
-
-    for(let f of followings) {
-        f.follow = Boolean(f.follow);
+    let followings;
+    if (myId == null) {
+        followings = await followsRepository.getFollowingsById(id);
+    } else {
+        followings = await followsRepository.getFollowingsAndFollowById(myId, id);
+        for(let f of followings) {
+            f.follow = Boolean(f.follow);
+        }
     }
 
     return followings;
@@ -159,20 +163,24 @@ async function getFollowings(myId, id) {
 /**
  * @param {number} myId
  * @param {number} id
- * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow: boolean}>>}
+ * @returns {Promise<Error | Array<{id: number, nickname: string, category: string, follow?: boolean}>>}
  */
 async function getFollowers(myId, id) {
-        if (Number.isNaN(myId) || Number.isNaN(id)) {
+    if (Number.isNaN(id)) {
         return {
             statusCode: 400,
             message: "id는 숫자여야 합니다."
         }
     }
 
-    let followers = await followsRepository.getFollowersById(myId, id);
-
-    for(let f of followers) {
-        f.follow = Boolean(f.follow);
+    let followers;
+    if (myId == null) {
+        followers = await followsRepository.getFollowersById(id);
+    } else {
+        followers = await followsRepository.getFollowersAndFollowById(myId, id);
+        for(let f of followers) {
+            f.follow = Boolean(f.follow);
+        }
     }
 
     return followers;

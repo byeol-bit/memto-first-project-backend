@@ -264,7 +264,7 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *     tags:
  *       - follows
  *     summary: 팔로잉 목록
- *     description: 팔로잉한 목록을 가져옵니다.
+ *     description: 팔로잉한 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다.
  *     security:
  *       - jwtCookie: []
  *     parameters:
@@ -280,6 +280,10 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *           type: array
  *           items:
  *             type: object
+ *             required:
+ *               - id
+ *               - nickname
+ *               - category
  *             properties:
  *               id:
  *                 type: string
@@ -319,7 +323,7 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *     tags:
  *       - follows
  *     summary: 팔로워 목록
- *     description: 팔로워의 목록을 가져옵니다.
+ *     description: 팔로워의 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다.
  *     security:
  *       - jwtCookie: []
  *     parameters:
@@ -335,6 +339,10 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *           type: array
  *           items:
  *             type: object
+ *             required:
+ *               - id
+ *               - nickname
+ *               - category
  *             properties:
  *               id:
  *                 type: string

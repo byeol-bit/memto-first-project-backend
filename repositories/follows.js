@@ -69,13 +69,30 @@ async function countFollowerByFollowingId(followingId) {
 }
 
 /**
+ * @param {number} id
+ * @returns {Promise<{id: number, nickname: string, category: string}[]>}
+ */
+async function getFollowingsById(id) {
+    const [rows] = await pool.query(`
+        SELECT u.id, u.nickname, u.category, u.introduction
+        FROM follows f
+        JOIN users u ON u.id = f.following_id
+        WHERE f.follower_id = ?;
+        `,
+        id
+    );
+
+    return rows;
+}
+
+/**
  * @param {number} myId
  * @param {number} id
  * @returns {Promise<{id: number, nickname: string, category: string, follow: boolean}[]>}
  */
-async function getFollowingsById(myId, id) {
+async function getFollowingsAndFollowById(myId, id) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, (f2.follower_id IS NOT NULL) AS follow
+        SELECT u.id, u.nickname, u.category, u.introduction, (f2.follower_id IS NOT NULL) AS follow
         FROM follows f
         JOIN users u ON u.id = f.following_id
         LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.following_id
@@ -88,13 +105,30 @@ async function getFollowingsById(myId, id) {
 }
 
 /**
+ * @param {number} id
+ * @returns {Promise<Array<{id: number, nickname: string, category: string}>>}
+ */
+async function getFollowersById(id) {
+    const [rows] = await pool.query(`
+        SELECT u.id, u.nickname, u.category, u.introduction
+        FROM follows f
+        JOIN users u ON u.id = f.follower_id
+        WHERE f.following_id = ?;
+        `,
+        id
+    );
+
+    return rows;
+}
+
+/**
  * @param {number} myId
  * @param {number} id
  * @returns {Promise<Array<{id: number, nickname: string, category: string, follow: number}>>}
  */
-async function getFollowersById(myId, id) {
+async function getFollowersAndFollowById(myId, id) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, (f2.following_id IS NOT NULL) AS follow
+        SELECT u.id, u.nickname, u.category, u.introduction, (f2.following_id IS NOT NULL) AS follow
         FROM follows f
         JOIN users u ON u.id = f.follower_id
         LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.follower_id
@@ -112,4 +146,6 @@ module.exports.isFollow = isFollow;
 module.exports.countFollwingByFollowerId = countFollwingByFollowerId;
 module.exports.countFollowerByFollowingId = countFollowerByFollowingId;
 module.exports.getFollowingsById = getFollowingsById;
+module.exports.getFollowingsAndFollowById = getFollowingsAndFollowById;
 module.exports.getFollowersById = getFollowersById;
+module.exports.getFollowersAndFollowById = getFollowersAndFollowById;
