@@ -82,3 +82,12 @@ CREATE TABLE follows (
     FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_follower_following (follower_id, following_id)
 );
+
+CREATE TABLE image_metadata (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_type VARCHAR(50) NOT NULL,
+    owner_id INT NOT NULL,  
+    image_path VARCHAR(255) NOT NULL, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_owner (owner_type, owner_id)
+);
