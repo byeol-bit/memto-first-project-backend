@@ -264,13 +264,19 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *     tags:
  *       - follows
  *     summary: 팔로잉 목록
- *     description: 팔로잉한 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다.
+ *     description: 팔로잉한 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다. 페이지는 1부터 시작합니다.
  *     security:
  *       - jwtCookie: []
  *     parameters:
  *       - in: path
  *         name: id
  *         type: number
+ *       - in: query
+ *         name: page
+ *         type: string
+ *       - in: query
+ *         name: limit
+ *         type: string
  *     produces:
  *       - application/json
  *     responses:
@@ -306,7 +312,7 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
 router.get('/followings/:id', catchAsync(async (req, res) => {
     let token = jwtUtil.decode(req.cookies.token);
     const id = parseInt(req.params.id);
-    let result = await followService.getFollowings(token?.id, id);
+    let result = await followService.getFollowings(token?.id, id, req.query.page ?? 1, req.query.limit ?? 10);
     if (result instanceof Error) {
         res.status(result.statusCode).json({
             message: result.message
@@ -323,13 +329,19 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *     tags:
  *       - follows
  *     summary: 팔로워 목록
- *     description: 팔로워의 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다.
+ *     description: 팔로워의 목록을 가져옵니다. 토큰이 있을 경우, 응답에 follow 항목이 추가됩니다. 페이지는 1부터 시작합니다.
  *     security:
  *       - jwtCookie: []
  *     parameters:
  *       - in: path
  *         name: id
  *         type: number
+ *       - in: query
+ *         name: page
+ *         type: string
+ *       - in: query
+ *         name: limit
+ *         type: string
  *     produces:
  *       - application/json
  *     responses:
@@ -365,7 +377,7 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
 router.get('/followers/:id', catchAsync(async (req, res) => {
     let token = jwtUtil.decode(req.cookies.token);
     const id = parseInt(req.params.id);
-    let result = await followService.getFollowers(token?.id, id);
+    let result = await followService.getFollowers(token?.id, id, req.query.page ?? 1, req.query.limit ?? 10);
     if (result instanceof Error) {
         res.status(result.statusCode).json({
             message: result.message
