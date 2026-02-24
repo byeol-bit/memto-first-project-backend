@@ -8,10 +8,8 @@ class RestaurantRepo {
         return rows;
     }
 
-    static async findAll() {
-        const [rows] = await connection.query(`SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount
-            FROM restaurants r LEFT JOIN visits v ON r.id = v.restaurant_id
-            GROUP BY r.id ORDER BY r.created_at DESC`);
+    static async findAll(sql, params) {
+        const [rows] = await connection.query(sql, params);
         return rows;
     }
 
@@ -24,13 +22,7 @@ class RestaurantRepo {
     }
     
     static async findBySearch(querys) {
-        let sql = "SELECT * FROM restaurants WHERE 1=1"
-        if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
-        if (querys.category) sql += ` AND category = '${querys.category}'`;
-
-        const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE id = ?', [restaurantId]
-        );
+        const [rows] = await connection.query(querys)
         return rows;
     }
     

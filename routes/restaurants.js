@@ -119,8 +119,16 @@ router.post('/', catchAsync(async (req, res) => {
  */
 
 router.get('/', catchAsync(async (req, res) => {
-    const restaurants = await RestaurantService.getAllRestaurants();
-    res.status(200).json(restaurants);
+    const cursor = parseInt(req.query.cursor) || 0;
+
+    const result = await RestaurantService.findAll(cursor);
+
+    res.status(200).json({
+        success: true,
+        data: result.data,
+        hasNextPage: result.hasNextPage,
+        nextCursor: result.nextCursor
+    });
 }));
 
 
