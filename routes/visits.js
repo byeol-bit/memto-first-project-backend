@@ -77,8 +77,6 @@ const upload = multer({ dest: 'images/temp' });
 router.post('/', upload.single('image'), catchAsync(async (req, res) => {
     const visitData = req.body
     const result = await VisitService.postVisits(visitData)
-    console.log(result)
-    console.log(result[0].id)
     if (req.file) {
         await imageService.saveImage(req.file, 'visits', result[0].id)
     }
@@ -397,21 +395,9 @@ router.get('/likes/status', catchAsync(async (req, res) => {
 
 router.get('/:id/image', catchAsync(async (req, res) => {
     const visitId = req.params.id;
-    console.log(visitId)
-    const fileNames = await imageService.getImagePath(visitId, 'visits');
+    const result = await imageService.getImagePath(visitId, 'visits');
 
-    if (fileNames.length === 0) {
-        return res.status(200).json({
-            seccess : true,
-            message : "이미지 없음"
-        })
-    }
-
-    const imageUrls = fileNames.map(name => `/app/images/${name}`)
-    res.status(200).json({
-        success : true,
-        images : imageUrls
-    });
+    res.status(200).json(result).sendFile(result.images[0], { root: '.' });
 }));
 
 module.exports = router;

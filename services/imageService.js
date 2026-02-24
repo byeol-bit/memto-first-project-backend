@@ -30,8 +30,18 @@ const saveImage = async (file, ownerType, ownerId) => {
 const getImagePath = async (ownerType, ownerId) => {
     const[rows] = await connection.query(`SELECT image_path FROM image_metadata 
         WHERE owner_id = ? AND owner_type = ?`, [ownerId, ownerType])
-    
-    return rows.map(row => row.image_path);
+
+    if (!rows || rows.length === 0) {
+        return {}
+    }
+
+    const imageUrls = rows.map(row => {
+        return `/app/images/${row.image_path}`
+    })
+    return {
+        success: true,
+        images: imageUrls
+    }
 }
 
 
