@@ -1,8 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const VisitService = require('../services/visitService');
-const catchAsync = require('../utils/catchAsync');
-
+const express = require('express')
+const router = express.Router()
+const VisitService = require('../services/visitService')
+const imageService = require('../services/imageService')
+const catchAsync = require('../utils/catchAsync')
+const multer = require('multer');
+const upload = multer({ dest: 'images/temp' });
 /**
  * @swagger
  * definitions:
@@ -72,10 +74,14 @@ const catchAsync = require('../utils/catchAsync');
  *         description: 서버 오류
 */
 
-router.post('/', catchAsync(async (req, res) => {
+router.post('/', upload.single('image'), catchAsync(async (req, res) => {
     const visitData = req.body
     const result = await VisitService.postVisits(visitData)
-
+    console.log(result)
+    console.log(result[0].id)
+    if (req.file) {
+        await imageService.saveImage(req.file, 'visits', result[0].id)
+    }
     res.status(201).json({
         success: true,
         message: "정보가 성공적으로 저장되었습니다.",
@@ -369,6 +375,43 @@ router.get('/likes/status', catchAsync(async (req, res) => {
     const { userId, visitId } = req.query;
     const isLiked = await VisitService.getLikeStatus(userId, visitId);
     res.status(200).json({ isLiked });
+}));
+
+/**
+ * @swagger
+ * /visits/{id}/image:
+ *   get:
+ *     tags:
+ *       - visits
+ *     summary: 리뷰 이미지 획득
+ *     description: 리뷰에 붙은 이미지를 획득합니다.
+ *     parameters:
+ *       - in: param
+ *         name: visitId
+ *         required: true
+ *         type: number
+ *     responses:
+ *       200:
+ *         description: 이미지 반환 성공
+ */
+
+router.get('/:id/image', catchAsync(async (req, res) => {
+    const visitId = req.params.id;
+    console.log(visitId)
+    const fileNames = await imageService.getImagePath(visitId, 'visits');
+
+    if (fileNames.length === 0) {
+        return res.status(200).json({
+            seccess : true,
+            message : "이미지 없음"
+        })
+    }
+
+    const imageUrls = fileNames.map(name => `/app/images/${name}`)
+    res.status(200).json({
+        success : true,
+        images : imageUrls
+    });
 }));
 
 module.exports = router;

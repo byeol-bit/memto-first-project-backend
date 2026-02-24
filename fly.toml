@@ -5,6 +5,12 @@
 
 app = 'hidden-master-server'
 primary_region = 'nrt'
+[env]
+  TZ = "Asia/Seoul"
+
+[mounts]
+  source = "hidden_master_data"
+  destination = "/app/images"
 
 [http_service]
   internal_port = 8080
