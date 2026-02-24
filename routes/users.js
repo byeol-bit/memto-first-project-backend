@@ -291,7 +291,7 @@ router.get('/random', catchAsync(async (req, res) => {
     if (result instanceof Error) {
         res.status(result.statusCode).json({message: result.message});
     } else {
-        res.status(200).json({users: result});
+        res.status(200).json(result);
     }
 }))
 
