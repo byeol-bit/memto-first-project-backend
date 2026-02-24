@@ -27,8 +27,14 @@ class VisitsRepo {
             `INSERT INTO visits (user_id, restaurant_id, visit_date, review) 
              VALUES (?, ?, ?, ?)`,
             [userId, restaurantId, visitDate, review]
-        );
-        return rows
+        )
+
+        console.log(rows)
+        const [result] = await connection.query(
+            `SELECT * FROM visits WHERE id = ?`, [rows.insertId]
+        )
+    
+        return result
     }
 
     static async findAll() {

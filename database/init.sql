@@ -9,6 +9,7 @@ CREATE TABLE restaurants (
     kakao_place_id VARCHAR(50),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    UNIQUE KEY uk_kakao_place_id (kakao_place_id)
 );
 
 CREATE TABLE users (
