@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 let server;
 
 function start() {
+    app.set('trust proxy', true);
     app.use(cors({ origin: [
             'http://localhost:5173',
             'https://memto-first-project-frontend.vercel.app'
