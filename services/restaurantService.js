@@ -7,10 +7,38 @@ class RestaurantService {
         return restaurant
     }
     
-    static async getAllRestaurants() {
-        const restaurants = await RestaurantRepo.findAll();
-        return restaurants;
-    }
+    static async getAllRestaurants(cursor) {
+        const lastId = (cursor && cursor > 0) ? parseInt(cursor) : null;
+        const fetchLimit = parseInt(limit) + 1;
+
+        let sql = `
+            SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount
+            FROM restaurants r 
+            LEFT JOIN visits v ON r.id = v.restaurant_id
+        `;
+        
+        let params = [];
+
+        if (lastId) {
+            sql += ` WHERE r.id < ?`; 
+            params.push(lastId);
+        }
+        
+        sql += ` GROUP BY r.id ORDER BY r.id DESC LIMIT ?`;
+        params.push(fetchLimit);
+
+        const [rows] = await RestaurantRepo.findAll(sql, params);
+
+        const hasNextPage = rows.length > limit;
+        const data = hasNextPage ? rows.slice(0, limit) : rows;
+        const nextCursor = hasNextPage ? data[data.length - 1].id : null;
+
+        return {
+            data,
+            hasNextPage,
+            nextCursor
+        };
+}
 
     static async getRestaurants(restaurantId) {
         const restaurants = await RestaurantRepo.find(restaurantId)
@@ -22,7 +50,7 @@ class RestaurantService {
         if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
         if (querys.category) sql += ` AND category = '${querys.category}'`;
 
-        const restaruants = await RestaurantRepo.search
+        const restaurants = await RestaurantRepo.findBySearch(sql);
         return restaurants;
     }
     static async searchKakao(query) {
