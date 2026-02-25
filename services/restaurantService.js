@@ -9,7 +9,7 @@ class RestaurantService {
     
     static async getAllRestaurants(cursor) {
         const lastId = (cursor && cursor > 0) ? parseInt(cursor) : null;
-        const fetchLimit = parseInt(limit) + 1;
+        const fetchLimit = 11;
 
         let sql = `
             SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount
@@ -29,8 +29,8 @@ class RestaurantService {
 
         const [rows] = await RestaurantRepo.findAll(sql, params);
 
-        const hasNextPage = rows.length > limit;
-        const data = hasNextPage ? rows.slice(0, limit) : rows;
+        const hasNextPage = rows.length > 10;
+        const data = hasNextPage ? rows.slice(0, 10) : rows;
         const nextCursor = hasNextPage ? data[data.length - 1].id : null;
 
         return {

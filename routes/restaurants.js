@@ -121,7 +121,7 @@ router.post('/', catchAsync(async (req, res) => {
 router.get('/', catchAsync(async (req, res) => {
     const cursor = parseInt(req.query.cursor) || 0;
 
-    const result = await RestaurantService.findAll(cursor);
+    const result = await RestaurantService.getAllRestaurants(cursor);
 
     res.status(200).json({
         success: true,

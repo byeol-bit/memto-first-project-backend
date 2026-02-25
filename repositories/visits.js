@@ -4,8 +4,8 @@ class VisitsRepo {
 
     static formatVisit(rows) {
         const { r_name, r_address, r_phone_number, r_category, r_latitude, r_longitude, r_kakao_place_id,
-            r_created_at, r_updated_at, ...visitData } = rows;
-        return {
+            r_created_at, r_updated_at, u_nickname, u_profile_image, u_introduction, u_category, ...visitData } = rows;
+        return { 
             ...visitData,
             restaurant: {
                 name: r_name,
@@ -17,6 +17,12 @@ class VisitsRepo {
                 kakao_place_id: r_kakao_place_id,
                 created_at: r_created_at,
                 updated_at: r_updated_at
+            },
+            user: {
+                nickname: u_nickname,
+                profile_image: u_profile_image,
+                introduction: u_introduction,
+                category: u_category
             }
         }
     }
@@ -37,13 +43,8 @@ class VisitsRepo {
         return result
     }
 
-    static async findAll() {
-        const [rows] = await connection.query(
-            `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
-            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
-            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at
-            FROM visits v JOIN restaurants r ON v.restaurant_id = r.id ORDER BY v.created_at DESC`
-        );
+    static async findAll(sql, params) {
+        const [rows] = await connection.query(sql, params);
         return rows.map(this.formatVisit);
     }
     
@@ -60,7 +61,7 @@ class VisitsRepo {
 
     static async findVisitByRestaurant(restaurantId) {
         let queryId = parseInt(restaurantId)
-        const [rows] = await connection.query(
+        const rows = await connection.query(
             `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
             r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
             r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at

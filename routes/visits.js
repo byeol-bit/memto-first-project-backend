@@ -253,7 +253,14 @@ router.get('/', catchAsync(async (req, res) => {
     }
 
     else {
-        visits = await VisitService.getAllVisit();
+        const cursor = parseInt(req.query.cursor) || 0;
+        visits = await VisitService.getAllVisit(cursor);
+        return res.status(200).json({
+            success: true,
+            data: visits.data,
+            hasNextPage: visits.hasNextPage,
+            nextCursor: visits.nextCursor
+        });
     }
 
     res.status(200).json(visits);
@@ -397,7 +404,7 @@ router.get('/:id/image', catchAsync(async (req, res) => {
     const visitId = req.params.id;
     const result = await imageService.getImagePath(visitId, 'visits');
 
-    res.status(200).json(result).sendFile(result.images[0], { root: '.' });
+    res.status(200).json(result);
 }));
 
 module.exports = router;
