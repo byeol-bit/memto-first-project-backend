@@ -28,7 +28,7 @@ async function findAuthUserByLoginId(loginId) {
     )
     return results[0];
 }
-
+// 여기다 join 2번 더 하면 됨. 팔로잉 수, 팔로워 수, 방문맛집 수, 리뷰 수
 /**
  * @param {number} offset
  * @param {number} limit 
@@ -36,7 +36,13 @@ async function findAuthUserByLoginId(loginId) {
  */
 async function findUsers(offset, limit) {
     const [results] = await pool.query(
-        'SELECT id, login_id, nickname, introduction, category, created_at FROM users LIMIT ?, ?',
+        `SELECT id, login_id, nickname, introduction, category, created_at,
+        ( SELECT count(*) FROM follows f1 WHERE f1.follower_id = u.id ) AS following_count,
+        ( SELECT count(*) FROM follows f2 WHERE f2.following_id = u.id ) AS follower_count,
+        ( SELECT count(DISTINCT v.restaurant_id) FROM visits v WHERE v.user_id = u.id) AS restaurant_count,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visit_count
+        FROM users u
+        LIMIT ?, ?`,
         [offset, limit]
     );
     return results;
@@ -68,7 +74,14 @@ async function findPasswordById(id) {
  * @returns {Promise<User[]>}
  */
 async function searchUsers(nickname, categories, offset, limit) {
-    let sql = 'SELECT id, login_id, nickname, introduction, category, created_at FROM users WHERE 1=1';
+    let sql =
+    `SELECT id, login_id, nickname, introduction, category, created_at,
+    ( SELECT count(*) FROM follows f1 WHERE f1.follower_id = u.id ) AS following_count,
+    ( SELECT count(*) FROM follows f2 WHERE f2.following_id = u.id ) AS follower_count,
+    ( SELECT count(DISTINCT v.restaurant_id) FROM visits v WHERE v.user_id = u.id) AS restaurant_count,
+    ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visit_count
+    FROM users u WHERE 1=1`;
+    
     let values = [];
 
     if (nickname) {
@@ -94,7 +107,12 @@ async function searchUsers(nickname, categories, offset, limit) {
  */
 async function randomUsers(limit) {
     let [results] = await pool.query(
-        'SELECT id, login_id, nickname, introduction, category, created_at FROM users ORDER BY RAND() LIMIT ?',
+        `SELECT id, login_id, nickname, introduction, category, created_at,
+        ( SELECT count(*) FROM follows f1 WHERE f1.follower_id = u.id ) AS following_count,
+        ( SELECT count(*) FROM follows f2 WHERE f2.following_id = u.id ) AS follower_count,
+        ( SELECT count(DISTINCT v.restaurant_id) FROM visits v WHERE v.user_id = u.id) AS restaurant_count,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visit_count
+        FROM users u ORDER BY RAND() LIMIT ?`,
         limit
     );
 
