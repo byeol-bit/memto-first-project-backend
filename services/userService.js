@@ -20,14 +20,18 @@ function convertUsersToCamelCase(users) {
 }
 
 function convertUserToCamelCase(user) {
-    const {id, login_id, nickname, introduction, category, created_at} = user;
+    const {id, login_id, nickname, introduction, category, created_at, following_count, follower_count, restaurant_count, visit_count} = user;
     return {
         id,
         loginId: login_id,
         nickname,
         introduction,
         category,
-        createdAt: created_at
+        createdAt: created_at,
+        followingCount: following_count,
+        followerCount: follower_count,
+        restaurantCount: restaurant_count,
+        visitCount: visit_count
     };
 }
 

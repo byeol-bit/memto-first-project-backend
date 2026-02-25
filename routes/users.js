@@ -27,6 +27,14 @@ const upload = multer({ dest: 'images/temp/' });
  *         type: string
  *       createdAt:
  *         type: string
+ *       followingCount:
+ *         type: number
+ *       followerCount:
+ *         type: number
+ *       restaurantCount:
+ *         type: number
+ *       visitCount:
+ *         type: number
 */
 
 /**
