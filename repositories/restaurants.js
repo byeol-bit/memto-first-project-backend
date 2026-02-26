@@ -41,7 +41,11 @@ class RestaurantRepo {
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [name, address, phone_number, category, longitude, latitude, kakao_place_id]
         );
-        return rows
+
+        const [result] = await connection.query(
+            `SELECT * FROM restaurants WHERE id = ?`, [rows.insertId]
+        )
+        return result
     }
 
     static async checkLike(userId, restaurantId) {
