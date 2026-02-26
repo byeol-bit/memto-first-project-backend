@@ -2,8 +2,8 @@ const KakaoApi = require('../utils/kakaoApi');
 const RestaurantRepo = require('../repositories/restaurants');
 
 class RestaurantService {
-    static async postRestaurants(userData) {
-        const restaurant = await RestaurantRepo.save(userData);
+    static async postRestaurants(restaurantData) {
+        const restaurant = await RestaurantRepo.save(restaurantData);
         return restaurant
     }
     
@@ -27,7 +27,7 @@ class RestaurantService {
         sql += ` GROUP BY r.id ORDER BY r.id DESC LIMIT ?`;
         params.push(fetchLimit);
 
-        const [rows] = await RestaurantRepo.findAll(sql, params);
+        const rows = await RestaurantRepo.findAll(sql, params);
 
         const hasNextPage = rows.length > 10;
         const data = hasNextPage ? rows.slice(0, 10) : rows;

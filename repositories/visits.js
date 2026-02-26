@@ -35,7 +35,6 @@ class VisitsRepo {
             [userId, restaurantId, visitDate, review]
         )
 
-        console.log(rows)
         const [result] = await connection.query(
             `SELECT * FROM visits WHERE id = ?`, [rows.insertId]
         )

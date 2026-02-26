@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const RestaurantService = require('../services/restaurantService');
-const catchAsync = require('../utils/catchAsync');
+const imageService = require('../services/imageService')
+const catchAsync = require('../utils/catchAsync')
+const multer = require('multer');
+const upload = multer({ dest: 'images/temp/' });
 
 /**
  * @swagger
@@ -81,15 +84,45 @@ const catchAsync = require('../utils/catchAsync');
  *         description: 서버 오류
 */
 
-router.post('/', catchAsync(async (req, res) => {
-    const userData = req.body
-    const result = await RestaurantService.postRestaurants(userData)
+router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
+    const restaurantData = req.body
+    const result = await RestaurantService.postRestaurants(restaurantData)
+    let paths = []
+    if (req.files) {
+        paths = await imageService.saveImage(req.files, 'restaurants', result[0].id)
+    }
 
     res.status(201).json({
         success: true,
         message: "정보가 성공적으로 저장되었습니다.",
-        data: result
+        data: result,
+        paths: paths
     });
+}));
+
+/**
+ * @swagger
+ * /restaurants/{id}/image:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 식당 이미지 획득
+ *     description: 식당에 붙은 이미지를 획득합니다.
+ *     parameters:
+ *       - in: param
+ *         name: restaurantId
+ *         required: true
+ *         type: number
+ *     responses:
+ *       200:
+ *         description: 이미지 반환 성공
+ */
+
+router.get('/:id/image', catchAsync(async (req, res) => {
+    const restaurantId = req.params.id;
+    const result = await imageService.getImagePath(restaurantId, 'restaurants');
+
+    res.status(200).json(result);
 }));
 
 /**
