@@ -298,7 +298,9 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *               category:
  *                 type: string
  *               follow:
- *                 type: string
+ *                 type: boolean
+ *               visitCount
+ *                 type: number
  *       400:
  *         description: 타입 오류
  *         schema:
@@ -355,6 +357,7 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *               - id
  *               - nickname
  *               - category
+ *               - visitCount
  *             properties:
  *               id:
  *                 type: string
@@ -363,7 +366,9 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *               category:
  *                 type: string
  *               follow:
- *                 type: string
+ *                 type: boolean
+ *               visitCount
+ *                 type: number
  *       400:
  *         description: 타입 오류
  *         schema:
