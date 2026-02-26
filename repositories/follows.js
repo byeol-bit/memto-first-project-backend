@@ -76,7 +76,8 @@ async function countFollowerByFollowingId(followingId) {
  */
 async function getFollowingsById(id, offset, limit) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, u.introduction
+        SELECT u.id, u.nickname, u.category, u.introduction,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visitCount
         FROM follows f
         JOIN users u ON u.id = f.following_id
         WHERE f.follower_id = ?
@@ -97,7 +98,8 @@ async function getFollowingsById(id, offset, limit) {
  */
 async function getFollowingsAndFollowById(myId, id, offset, limit) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, u.introduction, (f2.follower_id IS NOT NULL) AS follow
+        SELECT u.id, u.nickname, u.category, u.introduction, (f2.follower_id IS NOT NULL) AS follow,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visitCount
         FROM follows f
         JOIN users u ON u.id = f.following_id
         LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.following_id
@@ -118,7 +120,8 @@ async function getFollowingsAndFollowById(myId, id, offset, limit) {
  */
 async function getFollowersById(id, offset, limit) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, u.introduction
+        SELECT u.id, u.nickname, u.category, u.introduction,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visitCount
         FROM follows f
         JOIN users u ON u.id = f.follower_id
         WHERE f.following_id = ?
@@ -139,7 +142,8 @@ async function getFollowersById(id, offset, limit) {
  */
 async function getFollowersAndFollowById(myId, id, offset, limit) {
     const [rows] = await pool.query(`
-        SELECT u.id, u.nickname, u.category, u.introduction, (f2.following_id IS NOT NULL) AS follow
+        SELECT u.id, u.nickname, u.category, u.introduction, (f2.following_id IS NOT NULL) AS follow,
+        ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visitCount
         FROM follows f
         JOIN users u ON u.id = f.follower_id
         LEFT JOIN follows f2 ON f2.follower_id = ? AND f2.following_id = f.follower_id
