@@ -247,11 +247,13 @@ router.get('/', catchAsync(async (req, res) => {
     let visits;
 
     if (userId) {
-        visits = await VisitService.getVisitByUser(userId);
+        const cursor = parseInt(req.query.cursor) || 0;
+        visits = await VisitService.getVisitByUser(userId, cursor);
     }
 
     else if (restaurantId) {
-        visits = await VisitService.getVisitByRestaurant(restaurantId);
+        const cursor = parseInt(req.query.cursor) || 0;
+        visits = await VisitService.getVisitByRestaurant(restaurantId, cursor);
     }
 
     else {
