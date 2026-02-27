@@ -172,7 +172,12 @@ router.post('/login', catchAsync(async (req, res) => {
  *         description: 로그아웃 성공
 */
 router.post('/logout', catchAsync(async (_, res) => {
-    res.clearCookie('token').status(200).end();
+    res.clearCookie('token', {
+        path: '/',
+        httpOnly: true,
+        sameSite: "none",
+        secure: true
+    }).status(200).end();
 }));
 
 /**
