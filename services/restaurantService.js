@@ -3,7 +3,7 @@ const RestaurantRepo = require('../repositories/restaurants');
 
 class RestaurantService {
     static async postRestaurants(restaurantData) {
-        const restaurant = await RestaurantRepo.save(restaurantData);
+        const restaurant = await RestaurantRepo.save(restaurantData);   
         return restaurant
     }
     
@@ -12,9 +12,11 @@ class RestaurantService {
         const fetchLimit = 11;
 
         let sql = `
-            SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount
+            SELECT r.*, COUNT(DISTINCT v.user_id) AS expertCount,
+            COUNT(DISTINCT l.id) AS likesCount
             FROM restaurants r 
             LEFT JOIN visits v ON r.id = v.restaurant_id
+            LEFT JOIN restaurant_likes l ON r.id = l.restaurant_id
         `;
         
         let params = [];
@@ -46,12 +48,30 @@ class RestaurantService {
     }
 
     static async getBySearch(querys) {
-        let sql = "SELECT * FROM restaurants WHERE 1=1"
-        if (querys.q) sql += ` AND name LIKE '%${querys.q}%'`;
-        if (querys.category) sql += ` AND category = '${querys.category}'`;
+        let sql = `
+            SELECT 
+                r.*, 
+                COUNT(DISTINCT v.id) AS expertCount, 
+                COUNT(DISTINCT l.id) AS likesCount
+            FROM restaurants r
+            LEFT JOIN visits v ON r.id = v.restaurant_id
+            LEFT JOIN restaurant_likes l ON r.id = l.restaurant_id
+            WHERE 1=1
+        `
+        let params = []
 
-        const restaurants = await RestaurantRepo.findBySearch(sql);
-        return restaurants;
+        if (querys.q) {
+            sql += ` AND r.name LIKE ?`
+            params.push(`%${querys.q}%`)
+        }
+
+        if (querys.category) {
+            sql += ` AND r.category = ?`
+            params.push(querys.category)
+        }
+
+        const restaurants = await RestaurantRepo.findBySearch(sql, params)
+        return restaurants
     }
     static async searchKakao(query) {
         const results = await KakaoApi.search(query);
