@@ -299,7 +299,7 @@ router.get('/:id/follower-count', catchAsync(async (req, res) => {
  *                 type: string
  *               follow:
  *                 type: boolean
- *               visitCount
+ *               visitCount:
  *                 type: number
  *       400:
  *         description: 타입 오류
@@ -367,7 +367,7 @@ router.get('/followings/:id', catchAsync(async (req, res) => {
  *                 type: string
  *               follow:
  *                 type: boolean
- *               visitCount
+ *               visitCount:
  *                 type: number
  *       400:
  *         description: 타입 오류
