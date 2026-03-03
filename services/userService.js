@@ -5,8 +5,46 @@ require('dotenv').config();
 const passwordUtil = require('../utils/password');
 const userRepository = require('../repositories/users');
 
-const CATEGORIES = ['푸드파이터', '먹방유튜버', '동네맛집고수'];
+const CATEGORIES = [
+    '길 잃은 미식가',
+    '쩝쩝 학부생',
+    '동네 탐구 석사',
+    '맛집 개척 교수',
+    '맛집 총장'
+];
+const CATEGORIES2 = [
+    '길_잃은_미식가',
+    '쩝쩝_학부생',
+    '동네_탐구_석사',
+    '맛집_개척_교수',
+    '맛집_총장'
+];
 const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
+
+/**
+ * @returns {string[]}
+ */
+function getCategories() {
+    return CATEGORIES;
+}
+
+/**
+ * @param {number} reviewCount
+ * @returns {string}
+ */
+function getCategory(reviewCount) {
+    if (reviewCount < 2) {
+        return CATEGORIES[0];
+    } else if (reviewCount < 4) {
+        return CATEGORIES[1];
+    } else if (reviewCount < 6) {
+        return CATEGORIES[2];
+    } else if (reviewCount < 8) {
+        return CATEGORIES[3];
+    } else {
+        return CATEGORIES[4];
+    }
+}
 
 /**
  * @param {User[]} users
@@ -63,8 +101,7 @@ async function createUsers(createUserInput, file) {
         return err;
     } else {
         const hashedPassword = await passwordUtil.hashPassword(password);
-        let category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)]; // 카테고리 다양성을 위한 임시 코드
-        let insertId = await userRepository.insertUser(loginId, nickname, introduction, category, hashedPassword);
+        let insertId = await userRepository.insertUser(loginId, nickname, introduction, 'c', hashedPassword);
         if (insertId) {
             if (!file) return insertId;
 
@@ -130,7 +167,9 @@ async function getUsers(page, limit) {
     }
     const offset = getPageStart(page, limit);
     let users = await userRepository.findUsers(offset, limit);
-    return convertUsersToCamelCase(users);
+    users = convertUsersToCamelCase(users);
+    for(let user of users) { user.category = getCategory(user.visitCount) }
+    return users;
 }
 
 /**
@@ -147,7 +186,9 @@ async function getUserById(id) {
 
     let results = await userRepository.findUserById(id);
     if (results.length === 1) {
-        return convertUserToCamelCase(results[0]);
+        let user = convertUserToCamelCase(results[0]);
+        user.category = getCategory(user.visitCount);
+        return user;
     } else if (results.length === 0) {
         let err = new Error('해당하는 유저가 존재하지 않습니다.');
         err.statusCode = 400;
@@ -174,6 +215,22 @@ async function searchUsers(filters, page, limit) {
     } else if (!Array.isArray(categories)) {
         categories = [categories]
     }
+    
+    let visitCounts = [];
+    let visitCountOver7 = false;
+    for(let c of categories) {
+        if (c === CATEGORIES2[0]) {
+            visitCounts.push(0, 1);
+        } else if (c === CATEGORIES2[1]) {
+            visitCounts.push(2, 3);
+        } else if (c === CATEGORIES2[2]) {
+            visitCounts.push(4, 5);
+        } else if (c === CATEGORIES2[3]) {
+            visitCounts.push(6, 7);
+        } else if (c === CATEGORIES2[4]) {
+            visitCountOver7 = true;
+        }
+    }
 
     page = parseInt(page);
     limit = parseInt(limit);
@@ -188,8 +245,10 @@ async function searchUsers(filters, page, limit) {
         return err;
     } else {
         const offset = getPageStart(page, limit);
-        let users = await userRepository.searchUsers(nickname, categories, offset, limit);
-        return convertUsersToCamelCase(users);
+        let users = await userRepository.searchUsers(nickname, visitCounts, visitCountOver7, offset, limit);
+        convertUsersToCamelCase(users)
+        for(let user of users) { user.category = getCategory(user.visitCount) }
+        return users;
     }
 }
 
@@ -206,7 +265,9 @@ async function getRandomUsers(limit) {
     }
 
     let users = userRepository.randomUsers(limit);
-    return convertUsersToCamelCase(users);
+    convertUsersToCamelCase(users)
+    for(let user of users) { user.category = getCategory(user.visitCount) }
+    return users;
 }
 
 /**
@@ -237,19 +298,13 @@ async function existNickname(nickname) {
     return exist;
 }
 
-/**
- * @returns {string[]}
- */
-function getCategories() {
-    return CATEGORIES;
-}
+
 
 /**
  * @param {string} id 
  * @param {{
  *     nickname?: string,
- *     introduction?: string,
- *     category?: string
+ *     introduction?: string
  * }} updateUserInput
  * @param {Express.Multer.File | undefined} file
  * @returns {Promise<Error | null>}
@@ -259,7 +314,6 @@ async function updateUser(id, updateUserInput, file) {
     updateUserInput = updateUserInput ?? {};
     if (
         Number.isNaN(id) ||
-        updateUserInput.category != null && !CATEGORIES.includes(updateUserInput.category) ||
         updateUserInput.profile_image != null
     ) {
         let err = new Error('타입이 올바르지 않습니다.');

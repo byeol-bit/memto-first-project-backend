@@ -68,29 +68,43 @@ async function findPasswordById(id) {
 
 /**
  * @param {string | null | undefined} nickname 
- * @param {string[]} categories
+ * @param {number[]} visitCounts
+ * @param {boolean} visitCountOver7
  * @param {number} offset
  * @param {number} limit 
  * @returns {Promise<User[]>}
  */
-async function searchUsers(nickname, categories, offset, limit) {
+async function searchUsers(nickname, visitCounts, visitCountOver7, offset, limit) {
     let sql =
-    `SELECT id, login_id, nickname, introduction, category, created_at,
+    `SELECT u.*,
     ( SELECT count(*) FROM follows f1 WHERE f1.follower_id = u.id ) AS following_count,
-    ( SELECT count(*) FROM follows f2 WHERE f2.following_id = u.id ) AS follower_count,
-    ( SELECT count(DISTINCT v.restaurant_id) FROM visits v WHERE v.user_id = u.id) AS restaurant_count,
-    ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visit_count
-    FROM users u WHERE 1=1`;
-    
+    ( SELECT count(*) FROM follows f2 WHERE f2.following_id = u.id ) AS follower_count
+    FROM (
+        SELECT u2.id, u2.login_id, u2.nickname, u2.introduction, u2.category, u2.created_at,
+            COUNT(DISTINCT v.restaurant_id) AS restaurant_count,
+            COUNT(v.restaurant_id) AS visit_count
+        FROM users u2
+        LEFT JOIN visits v ON v.user_id = u2.id
+        GROUP BY u2.id
+    ) u
+    WHERE 1=1`;
+
     let values = [];
 
     if (nickname) {
         sql += ' AND nickname LIKE ?';
         values.push(`%${nickname}%`);
     }
-    if (categories.length) {
-        sql += ' AND category IN (?)';
-        values.push(categories);
+    if (visitCounts.length || visitCountOver7) {
+        sql += ' AND (1=2';
+        if (visitCounts.length) {
+            sql += ' OR u.visit_count IN (?)';
+            values.push(visitCounts);
+        }
+        if (visitCountOver7) {
+            sql += 'OR u.visit_count > 7';
+        }
+        sql += ')';
     }
     
     sql += ' LIMIT ?, ?';
