@@ -1,9 +1,13 @@
 const connection = require('../database/mariadb'); // db connection pool
 
 class RestaurantRepo {
-    static async find(restaurant_id) {
+    static async find(restaurantId) {
         const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE id = ? ORDER BY created_at DESC', [restaurant_id]
+            `SELECT r.*, COUNT(l.id) AS likes_count FROM restaurants r
+            LEFT JOIN restaurant_likes l ON r.id = l.restaurant_id 
+            WHERE r.id = ?
+            GROUP BY r.id
+            ORDER BY r.created_at DESC;`, [restaurantId]
         );
         return rows;
     }
@@ -12,17 +16,9 @@ class RestaurantRepo {
         const [rows] = await connection.query(sql, params);
         return rows;
     }
-
-    static async find(restaurantId) {
-        let queryId = parseInt(restaurantId)
-        const [rows] = await connection.query(
-            'SELECT * FROM restaurants WHERE id = ?', [queryId]
-        );
-        return rows;
-    }
     
-    static async findBySearch(querys) {
-        const [rows] = await connection.query(querys)
+    static async findBySearch(sql, params) {
+        const [rows] = await connection.query(sql, params)
         return rows;
     }
     
@@ -41,7 +37,11 @@ class RestaurantRepo {
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [name, address, phone_number, category, longitude, latitude, kakao_place_id]
         );
-        return rows
+
+        const [result] = await connection.query(
+            `SELECT * FROM restaurants WHERE id = ?`, [rows.insertId]
+        )
+        return result
     }
 
     static async checkLike(userId, restaurantId) {

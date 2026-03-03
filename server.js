@@ -19,6 +19,9 @@ function start() {
         res.send('server running!!');
     });
 
+    const staticPath = '/app/images/meta';
+    app.use('/app/images/meta', express.static(staticPath));
+    
     app.use(express.json());
     app.use(cookieParser())
     app.use('/api', swaggerUi.serve, swaggerUi.setup(specs));

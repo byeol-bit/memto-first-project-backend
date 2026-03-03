@@ -10,29 +10,7 @@ class VisitService {
         const lastId = (cursor && cursor > 0) ? parseInt(cursor) : null;
         const fetchLimit = 11;
 
-        let sql = `
-            SELECT 
-            v.*, 
-            r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
-            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
-            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at,
-            u.nickname AS u_nickname, u.profile_image AS u_profile_image, 
-            u.introduction AS u_introduction, u.category AS u_category
-            FROM visits v 
-            JOIN restaurants r ON v.restaurant_id = r.id 
-            JOIN users u ON v.user_id = u.id
-            `
-        let params = [];
-
-        if (lastId) {
-            sql += ` WHERE v.id < ?`; 
-            params.push(lastId);
-        }
-        
-        sql += ` GROUP BY v.id ORDER BY v.id DESC LIMIT ?`;
-        params.push(fetchLimit);
-
-        const rows = await VisitRepo.findAll(sql, params);
+        const rows = await VisitRepo.findAll(lastId, fetchLimit);
 
         const hasNextPage = rows.length > 10;
         const data = hasNextPage ? rows.slice(0, 10) : rows;
@@ -45,14 +23,38 @@ class VisitService {
         };
     }
 
-    static async getVisitByUser(userId) {
-        const visits = await VisitRepo.findVisitByUser(userId);
-        return visits;
+    static async getVisitByUser(userId, cursor) {
+        const lastId = (cursor && cursor > 0) ? parseInt(cursor) : null;
+        const fetchLimit = 11;
+
+        const rows = await VisitRepo.findVisitByUser(userId, lastId, fetchLimit);
+
+        const hasNextPage = rows.length > 10;
+        const data = hasNextPage ? rows.slice(0, 10) : rows;
+        const nextCursor = hasNextPage ? data[data.length - 1].id : null;
+
+        return {
+            data,
+            hasNextPage,
+            nextCursor
+        };
     }
 
-    static async getVisitByRestaurant(restaurantId) {
-        const visits = await VisitRepo.findVisitByRestaurant(restaurantId);
-        return visits;
+    static async getVisitByRestaurant(restaurantId, cursor) {
+        const lastId = (cursor && cursor > 0) ? parseInt(cursor) : null;
+        const fetchLimit = 11;
+
+        const rows = await VisitRepo.findVisitByRestaurant(restaurantId, lastId, fetchLimit);
+
+        const hasNextPage = rows.length > 10;
+        const data = hasNextPage ? rows.slice(0, 10) : rows;
+        const nextCursor = hasNextPage ? data[data.length - 1].id : null;
+
+        return {
+            data,
+            hasNextPage,
+            nextCursor
+        };
     }
 
     static async toggleLike(userId, visitId, isLike) {

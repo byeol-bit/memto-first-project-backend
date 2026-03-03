@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const RestaurantService = require('../services/restaurantService');
-const catchAsync = require('../utils/catchAsync');
+const imageService = require('../services/imageService')
+const catchAsync = require('../utils/catchAsync')
+const multer = require('multer');
+const upload = multer({ dest: 'images/temp/' });
 
 /**
  * @swagger
@@ -105,19 +108,24 @@ const catchAsync = require('../utils/catchAsync');
  *         description: 서버 오류
 */
 
-router.post('/', catchAsync(async (req, res) => {
-    const userData = req.body
+router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
+    const restaurantData = req.body
     if (!userData.name) {
         const error = new Error("식당 이름 누락");
         error.status = 400;
         throw error;
     }
-    const result = await RestaurantService.postRestaurants(userData)
+    const result = await RestaurantService.postRestaurants(restaurantData)
+    let paths = []
+    if (req.files) {
+        paths = await imageService.saveImage(req.files, 'restaurants', result[0].id)
+    }
 
     res.status(201).json({
         success: true,
         message: "정보가 성공적으로 저장되었습니다.",
-        data: result
+        data: result,
+        paths: paths
     });
 }));
 

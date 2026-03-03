@@ -4,7 +4,7 @@ const VisitService = require('../services/visitService')
 const imageService = require('../services/imageService')
 const catchAsync = require('../utils/catchAsync')
 const multer = require('multer');
-const upload = multer({ dest: 'images/temp' });
+const upload = multer({ dest: 'images/temp/' });
 /**
  * @swagger
  * definitions:
@@ -93,7 +93,7 @@ const upload = multer({ dest: 'images/temp' });
  *         description: 서버 오류
  */
 
-router.post('/', upload.single('image'), catchAsync(async (req, res) => {
+router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
     const visitData = req.body
     if (!visitData.userId || !visitData.restaurantId || !visitData.review) {
         const error = new Error("필수 값 누락");
@@ -101,13 +101,15 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
         throw error;
     }
     const result = await VisitService.postVisits(visitData)
-    if (req.file) {
-        await imageService.saveImage(req.file, 'visits', result[0].id)
+    let paths = []
+    if (req.files) {
+        paths = await imageService.saveImage(req.files, 'visits', result[0].id)
     }
     res.status(201).json({
         success: true,
         message: "정보가 성공적으로 저장되었습니다.",
-        data: result
+        data: result,
+        paths: paths
     });
 }));
 
@@ -262,11 +264,13 @@ router.get('/', catchAsync(async (req, res) => {
     let visits;
 
     if (userId) {
-        visits = await VisitService.getVisitByUser(userId);
+        const cursor = parseInt(req.query.cursor) || 0;
+        visits = await VisitService.getVisitByUser(userId, cursor);
     }
 
     else if (restaurantId) {
-        visits = await VisitService.getVisitByRestaurant(restaurantId);
+        const cursor = parseInt(req.query.cursor) || 0;
+        visits = await VisitService.getVisitByRestaurant(restaurantId, cursor);
     }
 
     else {
