@@ -25,6 +25,7 @@ const upload = multer({ dest: 'images/temp/' });
  *         type: string
  *       category:
  *         type: string
+ *         enum: ['길 잃은 미식가','쩝쩝 학부생','동네 탐구 석사','맛집 개척 교수','맛집 총장']
  *       createdAt:
  *         type: string
  *       followingCount:
@@ -238,7 +239,7 @@ router.get('/', catchAsync(async (req, res) => {
  *       - in: query
  *         name: category
  *         type: string
- *         enum: ['푸드파이터', '먹방유튜버', '동네맛집고수']
+ *         enum: ['길_잃은_미식가','쩝쩝_학부생','동네_탐구_석사','맛집_개척_교수','맛집_총장']
  *       - in: query
  *         name: page
  *         type: string
@@ -508,9 +509,6 @@ router.get('/:id', catchAsync(async (req, res) => {
  *         type: string
  *       - in: formData
  *         name: introduction
- *         type: string
- *       - in: formData
- *         name: category
  *         type: string
  *       - in: formData
  *         name: image
