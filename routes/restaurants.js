@@ -110,7 +110,7 @@ const upload = multer({ dest: 'images/temp/' });
 
 router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
     const restaurantData = req.body
-    if (!userData.name) {
+    if (!restaurantData.name) {
         const error = new Error("식당 이름 누락");
         error.status = 400;
         throw error;
@@ -242,12 +242,11 @@ router.get('/top', catchAsync(async (req, res) => {
  *         name: category
  *         type: string
  *     responses:
- *       200:
- *         description: 성공
+ *         description: 순위 반환 성공
  *         schema:
  *           type: array
  *           items:
- *             tpye: object
+ *             $ref: "#/definitions/restaurants"
  *             
  *       400:
  *         description: 검색어 누락
