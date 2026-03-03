@@ -316,7 +316,7 @@ router.get('/random', catchAsync(async (req, res) => {
  *     tags:
  *       - users
  *     summary: 본인의 정보
- *     description: 본인의 정보를 가져옵니다.
+ *     description: 본인의 정보를 가져옵니다. 응답에 visitCount를 제외한 다른 count는 오지 않습니다.
  *     security:
  *       - jwtCookie: []
  *     produces:
@@ -465,7 +465,7 @@ router.get('/categories', catchAsync(async (req, res) => {
  *     tags:
  *       - users
  *     summary: 고수 한명의 정보
- *     description: 해당하는 id의 고수의 정보를 가져옵니다.
+ *     description: 해당하는 id의 고수의 정보를 가져옵니다. 응답에 visitCount를 제외한 다른 count는 오지 않습니다.
  *     consumes:
  *       - application/json
  *     parameters:
