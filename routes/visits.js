@@ -130,21 +130,46 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
  *       200:
  *         description: 전체 리뷰 목록 조회 성공
  *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: true
- *             data:
- *               type: array
- *               items:
- *                 $ref: "#/definitions/visits"
- *             hasNextPage:
- *               type: boolean
- *               example: true
- *             nextCursor:
- *               type: integer
- *               example: 167
+ *           type: array
+ *           items:
+ *             allOf:
+ *               - $ref: "#/definitions/visits"
+ *               - type: object
+ *             properties:
+ *               visitLikeCount:
+ *                 type: integer
+ *                 example: 0
+ *               restaurant:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: string
+ *                   longtitde:
+ *                     type: string
+ *                   kakao_place_id:
+ *                     type: string
+ *                   restaurantLikeCount:
+ *                     type: integer
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   nickname:
+ *                     type: string
+ *                   profile_image:
+ *                     type: string
+ *                     nullable: true
+ *                   introduction:
+ *                     type: string
+ *                   category:
+ *                     type: string
  *       500:
  *         description: 서버 오류
  */
@@ -207,7 +232,7 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
  *                     type: string
  *                   category:
  *                     type: string
-  *                  total_review_count:
+ *                   total_review_count:
  *                     type: integer
  *       500:
  *         description: 서버 오류
@@ -239,10 +264,23 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
  *             properties:
  *               visitLikeCount:
  *                 type: integer
+ *                 example: 0
  *               restaurant:
  *                 type: object
  *                 properties:
  *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: string
+ *                   longtitde:
+ *                     type: string
+ *                   kakao_place_id:
  *                     type: string
  *                   restaurantLikeCount:
  *                     type: integer
@@ -250,6 +288,11 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
  *                 type: object
  *                 properties:
  *                   nickname:
+ *                     type: string
+ *                   profile_image:
+ *                     type: string
+ *                     nullable: true
+ *                   introduction:
  *                     type: string
  *                   category:
  *                     type: string
