@@ -335,7 +335,7 @@ async function updatePassword(id, password, newPassword) {
         return err;
     }
 
-    if (!passwordUtil.compare(password, obj.password)) {
+    if (!await passwordUtil.compare(password, obj.password)) {
         let err = new Error('비밀번호가 올바르지 않습니다.');
         err.statusCode = 400;
         return err;
