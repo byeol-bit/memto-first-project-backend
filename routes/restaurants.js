@@ -39,39 +39,63 @@ const catchAsync = require('../utils/catchAsync');
  *     tags:
  *       - restaurants
  *     summary: 식당 등록
- *     description: 새로운 식당을 등록합니다.
+ *     description: 새로운 식당을 등록합니다. 이미지의 경우 없어도 작동하며 최대 5장까지 등록 가능합니다.
  *     consumes:
- *       - application/json
+ *       - multipart/form-data
  *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - name
- *           properties:
- *             name:
- *               type: string
- *             address:
- *               type: string
- *             phone_number:
- *               type: string
- *             category:
- *               type: string
- *             latitue:
- *               type: number
- *             longtitue:
- *               type: number
- *             kakao_place_id:
- *               type: string
+ *       - in: formData
+ *         name: name
+ *         type: string
+ *       - in: formData
+ *         name: address
+ *         type: string
+ *       - in: formData
+ *         name: phone_number
+ *         type: string
+ *       - in: formData
+ *         name: category
+ *         type: string
+ *       - in: formData
+ *         name: longitude
+ *         type: number
+ *       - in: formData
+ *         name: latitude
+ *         type: number
+ *       - in: formData
+ *         name: kakao_place_id
+ *         type: number
+ *       - in: formData
+ *         name: image
+ *         type: file
  *     produces:
  *       - application/json
  *     responses:
  *       201:
  *         description: 식당 생성 및 값 반환
  *         schema:
- *           $ref: "#/definitions/restaurants"
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             message:
+ *               type: string
+ *               example: "정보가 성공적으로 저장되었습니다."
+ *             data:
+ *               type: object
+ *               properties:
+ *                 restaurants:
+ *                   type: array
+ *                   items:
+ *                     $ref: "#/definitions/restaurants"
+ *                 paths:
+ *                   type: array
+ *                   description: 저장된 이미지 파일의 경로 리스트
+ *                   items:
+ *                     type: 
+ *                     example: "https://...../image1.jpg"
  *       400:
- *         description: 잘못된 값 입력
+ *         description: 식당 이름 누락
  *         schema:
  *           type: object
  *           properties:
@@ -83,6 +107,11 @@ const catchAsync = require('../utils/catchAsync');
 
 router.post('/', catchAsync(async (req, res) => {
     const userData = req.body
+    if (!userData.name) {
+        const error = new Error("식당 이름 누락");
+        error.status = 400;
+        throw error;
+    }
     const result = await RestaurantService.postRestaurants(userData)
 
     res.status(201).json({
@@ -94,28 +123,48 @@ router.post('/', catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /restaurants:
+ * /restaurants?cursor='':
  *   get:
  *     tags:
  *       - restaurants
- *     summary: 모든 식당 조회
- *     description: 등록된 모든 식당을 반환합니다.
- *     produces:
- *       - application/json
+ *     summary: 식당 목록 조회
+ *     description: 커서 기반 페이지네이션을 지원하는 식당 목록을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         type: integer
+ *         description: 마지막으로 조회된 식당 ID (페이지네이션용)
  *     responses:
  *       200:
- *         description: 성공
+ *         description: 성공적으로 목록을 반환함
  *         schema:
- *           type: array
- *           items:
- *             allOf:
- *               - $ref: "#/definitions/restaurants"
- *               - type: object
- *                 properties:
- *                   experCount:
- *                     type: number
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             data:
+ *               type: array
+ *               items:
+ *                 allOf:
+ *                   - $ref: "#/definitions/restaurants"
+ *                   - type: object
+ *                     properties:
+ *                       expertCount:
+ *                         type: integer
+ *                         example: 1
+ *                       likesCount:
+ *                         type: integer
+ *                         example: 1
+ *             hasNextPage:
+ *               type: boolean
+ *               example: true
+ *             nextCursor:
+ *               type: integer
+ *               nullable: true
+ *               example: 54
  *       500:
- *         description: 서버 오류
+ *         description: 서버 에러
  */
 
 router.get('/', catchAsync(async (req, res) => {
@@ -204,9 +253,11 @@ router.get('/top', catchAsync(async (req, res) => {
  */
 
 router.get('/search', catchAsync(async (req, res) => {
-    const {q, category} = req.query;
+    const { q, category } = req.query;
     if (!q && !category) {
-        return res.status(400).json({ message: "검색어를 입력하세요.." });
+        const error = new Error("검색어 누락");
+        error.status = 400;
+        throw error;
     }
     const results = await RestaurantService.getBySearch({
         q,
@@ -268,7 +319,11 @@ router.get('/search', catchAsync(async (req, res) => {
 
 router.get('/kakao', catchAsync(async (req, res) => {
     const query = req.query.q;
-    if (!query) return res.status(400).json({ message: "검색어를 입력하세요." });
+    if (!query) {
+        const error = new Error("검색어 누락");
+        error.status = 400;
+        throw error;
+    }
     const results = await RestaurantService.kakaoSearch(query);
     res.status(200).json(results);
 }));
@@ -311,8 +366,12 @@ router.get('/kakao', catchAsync(async (req, res) => {
  */
 
 router.get('/:id', catchAsync(async (req, res) => {
-    let {id} = req.params
-    if (!id) return res.status(400).json({ message: "검색어를 입력하세요." });
+    let { id } = req.params
+    if (isNaN(id)) {
+        const error = new Error("유효하지 않은 형식입니다.");
+        error.status = 400;
+        throw error;
+    }
     id = parseInt(id)
     const restaurants = await RestaurantService.getRestaurants(id);
     res.status(200).json(restaurants);

@@ -37,34 +37,53 @@ const upload = multer({ dest: 'images/temp' });
  *     summary: 리뷰 등록
  *     description: 새로운 리뷰를 등록합니다.
  *     consumes:
- *       - application/json
+ *       - multipart/form-data
  *     parameters:
- *       - in: body
- *         schema:
- *           type: object
- *           required:
- *             - userId
- *             - restaurantId
- *             - visitDate
- *             - review
- *           properties:
- *             userId:
- *               type: number
- *             restaurantId:
- *               type: number
- *             visitDate:
- *               type: string
- *             review:
- *               type: string
+ *       - in: formData
+ *         name: userId
+ *         type: number
+ *         required: true
+ *       - in: formData
+ *         name: restaurantId
+ *         type: number
+ *         required: true
+ *       - in: formData
+ *         name: visit_date
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: review
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: image
+ *         type: file
  *     produces:
  *       - application/json
  *     responses:
  *       201:
- *         description: 리뷰 생성 및 값 반환
+ *         description: 방문 기록(리뷰) 생성 및 값 반환 성공
  *         schema:
- *           $ref: "#/definitions/visits"
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             message:
+ *               type: string
+ *               example: "정보가 성공적으로 저장되었습니다."
+ *             data:
+ *               type: array
+ *               items:
+ *                 $ref: "#/definitions/visits"
+ *             paths:
+ *               type: array
+ *               description: 저장된 이미지 파일의 경로 리스트
+ *               items:
+ *                 type: string
+ *                 example: "https://...../image1.jpg"
  *       400:
- *         description: 잘못된 값 입력
+ *         description: 필수 값 누락
  *         schema:
  *           type: object
  *           properties:
@@ -72,10 +91,15 @@ const upload = multer({ dest: 'images/temp' });
  *               type: string
  *       500:
  *         description: 서버 오류
-*/
+ */
 
 router.post('/', upload.single('image'), catchAsync(async (req, res) => {
     const visitData = req.body
+    if (!visitData.userId || !visitData.restaurantId || !visitData.review) {
+        const error = new Error("필수 값 누락");
+        error.status = 400;
+        throw error;
+    }
     const result = await VisitService.postVisits(visitData)
     if (req.file) {
         await imageService.saveImage(req.file, 'visits', result[0].id)
@@ -89,70 +113,57 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
 
 /**
  * @swagger
- * /visits:
+ * /visits?cursor='':
  *   get:
  *     tags:
  *       - visits
- *     summary: 모든 리뷰 조회
- *     description: 등록된 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
- *     produces:
- *       - application/json
+ *     summary: 전체 리뷰 목록 조회 (페이지네이션)
+ *     description: 유저나 식당 필터 없이 전체 리뷰를 최신순으로 조회합니다. 커서 기반 페이지네이션을 지원합니다.
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         type: integer
+ *         description: 다음 페이지 조회를 위한 커서 값
  *     responses:
  *       200:
- *         description: 성공
+ *         description: 전체 리뷰 목록 조회 성공
  *         schema:
- *           type: array
- *           items:
- *             allOf:
- *               - $ref: "#/definitions/visits"
- *               - type: object
- *             properties:
- *               restaurant:
- *                 tpye: object
- *                 properties:
- *                   name:
- *                     type: string
- *                   address:
- *                     type: string
- *                   phone_number:
- *                     type: string
- *                   category:
- *                     type: string
- *                   latitude:
- *                     type: number
- *                   longitude:
- *                     type: number
- *                   kakao-place_id:
- *                     type: string
- *                   created_at:
- *                     type: string
- *                   updated_at:
- *                     type: string
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             data:
+ *               type: array
+ *               items:
+ *                 $ref: "#/definitions/visits"
+ *             hasNextPage:
+ *               type: boolean
+ *               example: true
+ *             nextCursor:
+ *               type: integer
+ *               example: 167
  *       500:
  *         description: 서버 오류
  */
 
 /**
  * @swagger
- * /visits?userId=""":
+ * /visits?userId='':
  *   get:
  *     tags:
  *       - visits
- *     summary: userId 기반 리뷰 조회
- *     description: |
- *       해당 유저가 작성한 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
- *       전체 반환, 식당id 기반과 같은 url을 사용하고 있으니 쿼리에 주의가 필요합니다.
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
+ *     summary: 특정 유저의 리뷰 목록 조회
+ *     description: 쿼리 파라미터 `userId`를 사용하여 해당 유저가 작성한 모든 리뷰를 조회합니다. 사용자가 몇개의 리뷰를 작성했는지도 포함합니다.
  *     parameters:
  *       - in: query
  *         name: userId
- *         type: number
+ *         required: true
+ *         type: integer
+ *         description: 조회할 유저의 고유 ID
  *     responses:
  *       200:
- *         description: 성공
+ *         description: 유저 리뷰 조회 성공
  *         schema:
  *           type: array
  *           items:
@@ -160,8 +171,11 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *               - $ref: "#/definitions/visits"
  *               - type: object
  *             properties:
+ *               visitLikeCount:
+ *                 type: integer
+ *                 example: 0
  *               restaurant:
- *                 tpye: object
+ *                 type: object
  *                 properties:
  *                   name:
  *                     type: string
@@ -172,40 +186,48 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *                   category:
  *                     type: string
  *                   latitude:
- *                     type: number
- *                   longitude:
- *                     type: number
- *                   kakao-place_id:
  *                     type: string
- *                   created_at:
+ *                   longtitde:
  *                     type: string
- *                   updated_at:
+ *                   kakao_place_id:
  *                     type: string
+ *                   restaurantLikeCount:
+ *                     type: integer
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   nickname:
+ *                     type: string
+ *                   profile_image:
+ *                     type: string
+ *                     nullable: true
+ *                   introduction:
+ *                     type: string
+ *                   category:
+ *                     type: string
+  *                  total_review_count:
+ *                     type: integer
  *       500:
  *         description: 서버 오류
  */
 
 /**
  * @swagger
- * /visits?restaurantId="":
+ * /visits?restaurantId='':
  *   get:
  *     tags:
  *       - visits
- *     summary: restaurantId 기반 리뷰 조회
- *     description: |
- *       해당 식당에 작성한 모든 리뷰를 반환합니다. 각 리뷰에는 식당 정보도 포함됩니다.
- *       전체 반환, 유저id 기반과 같은 url을 사용하고 있으니 쿼리에 주의가 필요합니다.
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
+ *     summary: 특정 식당의 리뷰 목록 조회
+ *     description: 쿼리 파라미터 `restaurantId`를 사용하여 해당 식당에 달린 모든 리뷰를 조회합니다.
  *     parameters:
  *       - in: query
  *         name: restaurantId
- *         type: number
+ *         required: true
+ *         type: integer
+ *         description: 조회할 식당의 고유 ID
  *     responses:
  *       200:
- *         description: 성공
+ *         description: 식당 리뷰 조회 성공
  *         schema:
  *           type: array
  *           items:
@@ -213,34 +235,29 @@ router.post('/', upload.single('image'), catchAsync(async (req, res) => {
  *               - $ref: "#/definitions/visits"
  *               - type: object
  *             properties:
+ *               visitLikeCount:
+ *                 type: integer
  *               restaurant:
- *                 tpye: object
+ *                 type: object
  *                 properties:
  *                   name:
  *                     type: string
- *                   address:
- *                     type: string
- *                   phone_number:
+ *                   restaurantLikeCount:
+ *                     type: integer
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   nickname:
  *                     type: string
  *                   category:
- *                     type: string
- *                   latitude:
- *                     type: number
- *                   longitude:
- *                     type: number
- *                   kakao-place_id:
- *                     type: string
- *                   created_at:
- *                     type: string
- *                   updated_at:
  *                     type: string
  *       500:
  *         description: 서버 오류
  */
 
+
 router.get('/', catchAsync(async (req, res) => {
     const {userId, restaurantId} = req.query;
-    console.log(req.query)
 
     let visits;
 
@@ -264,6 +281,75 @@ router.get('/', catchAsync(async (req, res) => {
     }
 
     res.status(200).json(visits);
+}));
+
+/**
+ * @swagger
+ * /visits/{id}:
+ *   patch:
+ *     tags:
+ *       - visits
+ *     summary: 리뷰 수정
+ *     description: |
+ *       특정 리뷰를 수정합니다. 수정 가능한 필드는 다음과 같습니다: visit_date, review, image_urls.
+ *     consumes:
+ *       - application/json
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         type: number
+ *     responses:
+ *       200:
+ *         description: 성공
+ *         schema:
+ *           type: array
+ *           items:
+ *             allOf:
+ *               - $ref: "#/definitions/visits"
+ *               - type: object
+ *             properties:
+ *               restaurant:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   phone_number:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *                   kakao-place_id:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                   updated_at:
+ *                     type: string
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.patch('/:id', upload.array('image', 5), catchAsync(async (req, res) => {
+    const visitId = req.params.id;
+    const userId = req.user.id; 
+    const updateData = req.body;
+    
+    if (updateData.visit_date && !updateData.visit_date.includes('-')) {
+        updateData.visit_date = updateData.visit_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+    }
+
+    const result = await VisitService.patchVisit(visitId, userId, updateData, req.files);
+
+    res.status(200).json({
+        success: true,
+        message: "리뷰가 수정되었습니다."
+    });
 }));
 
 /**

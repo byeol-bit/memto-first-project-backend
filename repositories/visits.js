@@ -4,7 +4,7 @@ class VisitsRepo {
 
     static formatVisit(rows) {
         const { r_name, r_address, r_phone_number, r_category, r_latitude, r_longitude, r_kakao_place_id,
-            r_created_at, r_updated_at, u_nickname, u_profile_image, u_introduction, u_category, ...visitData } = rows;
+            r_created_at, r_updated_at, u_nickname, u_profile_image, u_introduction, u_category, total_count, ...visitData } = rows;
         return { 
             ...visitData,
             restaurant: {
@@ -22,7 +22,8 @@ class VisitsRepo {
                 nickname: u_nickname,
                 profile_image: u_profile_image,
                 introduction: u_introduction,
-                category: u_category
+                category: u_category,
+                total_review_count: total_count
             }
         }
     }
@@ -51,10 +52,22 @@ class VisitsRepo {
     static async findVisitByUser(userId) {
         let queryId = parseInt(userId)
         const [rows] = await connection.query(
-            `SELECT v.*, r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
-            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
-            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at
-            FROM visits v JOIN restaurants r ON v.restaurant_id = r.id WHERE user_id = ? ORDER BY v.created_at DESC`, [queryId]
+            `SELECT 
+                v.*, 
+                COUNT(*) OVER() AS total_count,
+                r.name AS r_name, 
+                r.address AS r_address, 
+                r.phone_number AS r_phone_number,
+                r.category AS r_category, 
+                r.latitude AS r_latitude, 
+                r.longitude AS r_longitude,
+                r.kakao_place_id AS r_kakao_place_id, 
+                r.created_at AS r_created_at, 
+                r.updated_at AS r_updated_at
+            FROM visits v 
+            JOIN restaurants r ON v.restaurant_id = r.id 
+            WHERE v.user_id = ? 
+            ORDER BY v.created_at DESC;`, [queryId]
         );
         return rows.map(this.formatVisit);
     }
