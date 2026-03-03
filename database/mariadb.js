@@ -9,6 +9,7 @@ const pool = mariadb.createPool(
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         timezone: '+09:00',
+        dateStrings: true,
         waitForConnections: true,   
         connectionLimit: 6,          
         connectTimeout: 10000,       
