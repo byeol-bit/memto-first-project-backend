@@ -1,4 +1,5 @@
 const followsRepository = require('../repositories/follows');
+const {getCategory} = require('../utils/category');
 
 /**
  * @typedef {Object} FollowSuccess
@@ -171,6 +172,7 @@ async function getFollowings(myId, id, page, limit) {
         }
     }
 
+    for(let user of followings) { user.category = getCategory(user.visitCount) }
     return followings;
 }
 
@@ -202,6 +204,7 @@ async function getFollowers(myId, id, page, limit) {
         }
     }
 
+    for(let user of followers) { user.category = getCategory(user.visitCount) }
     return followers;
 }
 
