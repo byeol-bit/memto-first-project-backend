@@ -116,8 +116,10 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
         throw error;
     }
     const result = await RestaurantService.postRestaurants(restaurantData)
+    console.log(`이거는 reuslt[0].id 입니다 ${result[0].id}`)
     let paths = []
     if (req.files) {
+        console.log("이미지 저장 시작")
         paths = await imageService.saveImage(req.files, 'restaurants', result[0].id)
     }
 
@@ -242,6 +244,7 @@ router.get('/top', catchAsync(async (req, res) => {
  *         name: category
  *         type: string
  *     responses:
+ *       200:
  *         description: 순위 반환 성공
  *         schema:
  *           type: array
@@ -374,11 +377,12 @@ router.get('/kakao', catchAsync(async (req, res) => {
 
 router.get('/:id', catchAsync(async (req, res) => {
     let { id } = req.params
-    if (isNaN(id)) {
-        const error = new Error("유효하지 않은 형식입니다.");
-        error.status = 400;
-        throw error;
-    }
+    // if (isNaN(id)) {
+    //     const error = new Error("유효하지 않은 형식입니다.");
+    //     error.status = 400;
+    //     throw error;
+    // }
+    console.log(`385번째 줄 ${id}`)
     id = parseInt(id)
     const restaurants = await RestaurantService.getRestaurants(id);
     res.status(200).json(restaurants);
@@ -500,6 +504,33 @@ router.get('/likes/status', catchAsync(async (req, res) => {
     const { userId, restaurantId } = req.query;
     const isLiked = await RestaurantService.getLikeStatus(userId, restaurantId);
     res.status(200).json({ isLiked });
+}));
+
+module.exports = router;
+
+/**
+ * @swagger
+ * /restaurants/{id}/image:
+ *   get:
+ *     tags:
+ *       - restaurants
+ *     summary: 식당 이미지 획득
+ *     description: 식당에 붙은 이미지를 획득합니다.
+ *     parameters:
+ *       - in: param
+ *         name: restaurantId
+ *         required: true
+ *         type: number
+ *     responses:
+ *       200:
+ *         description: 이미지 반환 성공
+ */
+
+router.get('/:id/image', catchAsync(async (req, res) => {
+    const restaurantId = req.params.id;
+    const result = await imageService.getImagePath(restaurantId, 'restaurants');
+
+    res.status(200).json(result);
 }));
 
 module.exports = router;

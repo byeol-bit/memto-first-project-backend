@@ -2,12 +2,14 @@ const connection = require('../database/mariadb'); // db connection pool
 
 class RestaurantRepo {
     static async find(restaurantId) {
+        let parseId = parseInt(restaurantId)
+        console.log(parseId)
         const [rows] = await connection.query(
             `SELECT r.*, COUNT(l.id) AS likes_count FROM restaurants r
             LEFT JOIN restaurant_likes l ON r.id = l.restaurant_id 
             WHERE r.id = ?
             GROUP BY r.id
-            ORDER BY r.created_at DESC;`, [restaurantId]
+            ORDER BY r.created_at DESC;`, [parseId]
         );
         return rows;
     }
