@@ -83,26 +83,24 @@ class VisitsRepo {
         let sql =         
         `SELECT 
             v.*, 
-            COUNT(*) OVER() AS total_count,
             r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
             r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
             r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at,
             u.nickname AS u_nickname, u.profile_image AS u_profile_image,
-            COUNT(DISTINCT rl.id) AS restaurantLikeCount,
-            COUNT(DISTINCT vl.id) AS visitLikeCount
+            (SELECT COUNT(*) FROM visits WHERE user_id = v.user_id) AS total_count,
+            (SELECT COUNT(*) FROM restaurant_likes WHERE restaurant_id = r.id) AS restaurantLikeCount,
+            (SELECT COUNT(*) FROM visit_likes WHERE visit_id = v.id) AS visitLikeCount
         FROM visits v 
         JOIN restaurants r ON v.restaurant_id = r.id 
         JOIN users u ON v.user_id = u.id
-        LEFT JOIN restaurant_likes rl ON r.id = rl.restaurant_id
-        LEFT JOIN visit_likes vl ON v.id = vl.visit_id
-        WHERE v.user_id = ? `
+        WHERE v.user_id = ?`
 
         let params = [userId]
 
         const parsedId = parseInt(lastId)
         if (!isNaN(parsedId) && lastId !== null) {
             sql += ` AND v.id < ? `
-            params.push(parseInt(fetchLimit))
+            params.push(parseInt(parsedId))
         }
         
         sql += ` GROUP BY v.id ORDER BY v.id DESC LIMIT ?`;
@@ -127,7 +125,7 @@ class VisitsRepo {
         JOIN users u ON v.user_id = u.id
         LEFT JOIN restaurant_likes rl ON r.id = rl.restaurant_id
         LEFT JOIN visit_likes vl ON v.id = vl.visit_id
-        WHERE v.restaurant_id = ? 
+        WHERE v.restaurant_id = ?
         `
 
         let params = [restaurantId]
@@ -141,6 +139,7 @@ class VisitsRepo {
         sql += ` GROUP BY v.id ORDER BY v.id DESC LIMIT ?`
         params.push(parseInt(fetchLimit))
         const [rows] = await connection.query(sql, params)
+
         return rows.map(this.formatVisit)
 
     }

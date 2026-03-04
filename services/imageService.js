@@ -2,6 +2,7 @@ const multer = require('multer')
 const path = require('path')
 const sharp = require('sharp')
 const fs = require('fs')
+const crypto = require('crypto')
 const connection = require('../database/mariadb')
 
 const uploadDir = '/app/images/meta'
@@ -13,7 +14,7 @@ const saveImage = async (files, ownerType, ownerId) => {
     if (!files) return null
 
     const uploadPromises = files.map(async (file) => {
-        const fileName = `${ownerType}-${ownerId}-${Date.now()}-${Math.floor(Math.random()*1000)}.webp`
+        const fileName = `${ownerType}-${ownerId}-${crypto.randomBytes(6).toString('hex')}.webp`
         const filePath = path.join(uploadDir, fileName)
 
         await sharp(file.path)
@@ -28,7 +29,7 @@ const saveImage = async (files, ownerType, ownerId) => {
         await connection.query(`INSERT INTO image_metadata (owner_type, owner_id, image_path) 
             VALUES (?, ?, ?)`, [ownerType, ownerId, fileName])
         
-            return fileName;
+            return `https://hidden-master-server.fly.dev/app/images/meta/${fileName}`;
     })
 
     return Promise.all(uploadPromises)

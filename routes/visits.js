@@ -48,7 +48,7 @@ const upload = multer({ dest: 'images/temp/' });
  *         type: number
  *         required: true
  *       - in: formData
- *         name: visit_date
+ *         name: visitDate
  *         type: string
  *         required: true
  *       - in: formData
