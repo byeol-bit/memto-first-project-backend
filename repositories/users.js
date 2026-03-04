@@ -53,7 +53,13 @@ async function findUsers(offset, limit) {
  * @returns {Promise<User[]>}
  */
 async function findUserById(id) {
-    const [results] = await pool.query('SELECT id, login_id, nickname, introduction, category, created_at FROM users WHERE id = ?', id);
+    const [results] = await pool.query(
+        `SELECT u.id, u.login_id, u.nickname, u.introduction, u.created_at,
+            ( SELECT count(*) FROM visits v WHERE v.user_id = u.id) AS visit_count
+        FROM users u
+        WHERE id = ?`,
+        id
+    );
     return results;
 }
 
