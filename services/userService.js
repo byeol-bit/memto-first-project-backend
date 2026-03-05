@@ -233,7 +233,7 @@ async function getRandomUsers(limit) {
         return err;
     }
 
-    let users = userRepository.randomUsers(limit);
+    let users = await userRepository.randomUsers(limit);
     convertUsersToCamelCase(users)
     for(let user of users) { user.category = getCategory(user.visitCount) }
     return users;
