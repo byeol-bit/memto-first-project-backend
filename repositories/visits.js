@@ -4,7 +4,8 @@ class VisitsRepo {
 
     static formatVisit(rows) {
         const { r_name, r_address, r_phone_number, r_category, r_latitude, r_longitude, r_kakao_place_id,
-            r_created_at, r_updated_at, u_nickname, u_profile_image, u_introduction, u_category, total_count, restaurantLikeCount, visitLikeCount, ...visitData } = rows;
+            r_created_at, r_updated_at, u_nickname, u_profile_image, u_introduction, u_category,
+            total_review_restaurant_count, total_count, restaurantLikeCount, visitLikeCount, ...visitData } = rows;
       
         return { 
             ...visitData,
@@ -19,7 +20,8 @@ class VisitsRepo {
                 kakao_place_id: r_kakao_place_id,
                 created_at: r_created_at,
                 updated_at: r_updated_at,
-                restaurantLikeCount: restaurantLikeCount
+                restaurantLikeCount: restaurantLikeCount,
+                totalRestaurantReviewCount: total_review_restaurant_count
             },
             user: {
                 nickname: u_nickname,
@@ -114,19 +116,28 @@ class VisitsRepo {
         let sql = `
         SELECT 
             v.*, 
-            r.name AS r_name, r.address AS r_address, r.phone_number AS r_phone_number,
-            r.category AS r_category, r.latitude AS r_latitude, r.longitude AS r_longitude,
-            r.kakao_place_id AS r_kakao_place_id, r.created_at AS r_created_at, r.updated_at AS r_updated_at,
-            u.nickname AS u_nickname, u.profile_image AS u_profile_image,
-            COUNT(DISTINCT rl.id) AS restaurantLikeCount,
-            COUNT(DISTINCT vl.id) AS visitLikeCount
+            r.name AS r_name, 
+            r.address AS r_address, 
+            r.phone_number AS r_phone_number,
+            r.category AS r_category, 
+            r.latitude AS r_latitude, 
+            r.longitude AS r_longitude,
+            r.kakao_place_id AS r_kakao_place_id, 
+            r.created_at AS r_created_at, 
+            r.updated_at AS r_updated_at,
+            u.nickname AS u_nickname, 
+            u.profile_image AS u_profile_image,
+
+            (SELECT COUNT(*) FROM visits WHERE restaurant_id = r.id) AS total_review_restaqurant_count,
+            (SELECT COUNT(*) FROM restaurant_likes WHERE restaurant_id = r.id) AS restaurantLikeCount,
+            (SELECT COUNT(*) FROM visit_likes WHERE visit_id = v.id) AS visitLikeCount
         FROM visits v 
         JOIN restaurants r ON v.restaurant_id = r.id 
         JOIN users u ON v.user_id = u.id
-        LEFT JOIN restaurant_likes rl ON r.id = rl.restaurant_id
-        LEFT JOIN visit_likes vl ON v.id = vl.visit_id
         WHERE v.restaurant_id = ?
         `
+        
+
 
         let params = [restaurantId]
 
@@ -142,6 +153,15 @@ class VisitsRepo {
 
         return rows.map(this.formatVisit)
 
+    }
+
+    static async edit(sql, params) {
+        console.log(sql, params)
+        return await connection.query(sql, params)
+    }
+
+    static async delete(sql, params) {
+        return await connection.query(sql, params)
     }
 
     static async addLike(userId, visitId) {
