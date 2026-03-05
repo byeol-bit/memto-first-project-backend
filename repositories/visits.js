@@ -1,4 +1,5 @@
 const connection = require('../database/mariadb')
+const {getCategory} = require('../utils/category');
 
 class VisitsRepo {
 
@@ -56,7 +57,8 @@ class VisitsRepo {
             u.nickname AS u_nickname, u.profile_image AS u_profile_image, 
             u.introduction AS u_introduction, u.category AS u_category,
             COUNT(DISTINCT rl.id) AS restaurantLikeCount,
-            COUNT(DISTINCT vl.id) AS visitLikeCount
+            COUNT(DISTINCT vl.id) AS visitLikeCount,
+            ( SELECT count(*) FROM visits v2 WHERE v2.user_id = u.id) AS visitCount
         FROM visits v 
         JOIN restaurants r ON v.restaurant_id = r.id 
         JOIN users u ON v.user_id = u.id
@@ -76,6 +78,7 @@ class VisitsRepo {
         params.push(parseInt(fetchLimit));
 
         const [rows] = await connection.query(sql, params)
+        rows.map((row) => row.u_category = getCategory(row.visitCount));
         return rows.map(this.formatVisit)
     }
     
