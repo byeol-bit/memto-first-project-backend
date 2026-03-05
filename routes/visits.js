@@ -5,6 +5,7 @@ const imageService = require('../services/imageService')
 const catchAsync = require('../utils/catchAsync')
 const multer = require('multer');
 const upload = multer({ dest: 'images/temp/' });
+
 /**
  * @swagger
  * definitions:
@@ -302,7 +303,7 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
 
 
 router.get('/', catchAsync(async (req, res) => {
-    const {userId, restaurantId} = req.query;
+    const { userId, restaurantId } = req.query;
 
     let visits;
 
@@ -337,8 +338,70 @@ router.get('/', catchAsync(async (req, res) => {
  *     tags:
  *       - visits
  *     summary: 리뷰 수정
+ *     description: 특정 리뷰의 내용을 수정합니다. (현재 review 필드만 수정 가능)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: 수정할 리뷰(visit)의 ID
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               review:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "리뷰가 수정되었습니다."
+ *       400:
+ *         description: 필수 값 누락 (review 텍스트 없음)
+ *       500:
+ *         description: 서버 오류
+ */
+
+router.patch('/:id', catchAsync(async (req, res) => {
+    const visitId = req.params.id
+    const updateData = req.body;
+
+    if (!updateData.review) {
+        const error = new Error("리뷰 텍스트 값 누락");
+        error.status = 400;
+        throw error;
+    }
+
+    await VisitService.patchVisit(visitId, updateData);
+
+    res.status(200).json({
+        success: true,
+        message: "리뷰가 수정되었습니다.",
+    });
+}));
+
+/**
+ * @swagger
+ * /visits/{id}:
+ *   delete:
+ *     tags:
+ *       - visits
+ *     summary: 리뷰 삭제
  *     description: |
- *       특정 리뷰를 수정합니다. 수정 가능한 필드는 다음과 같습니다: visit_date, review, image_urls.
+ *       특정 리뷰를 삭제
  *     consumes:
  *       - application/json
  *     produces:
@@ -351,51 +414,22 @@ router.get('/', catchAsync(async (req, res) => {
  *       200:
  *         description: 성공
  *         schema:
- *           type: array
- *           items:
- *             allOf:
- *               - $ref: "#/definitions/visits"
- *               - type: object
- *             properties:
- *               restaurant:
- *                 type: object
- *                 properties:
- *                   name:
- *                     type: string
- *                   address:
- *                     type: string
- *                   phone_number:
- *                     type: string
- *                   category:
- *                     type: string
- *                   latitude:
- *                     type: number
- *                   longitude:
- *                     type: number
- *                   kakao-place_id:
- *                     type: string
- *                   created_at:
- *                     type: string
- *                   updated_at:
- *                     type: string
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
  *       500:
  *         description: 서버 오류
  */
 
-router.patch('/:id', upload.array('image', 5), catchAsync(async (req, res) => {
-    const visitId = req.params.id;
-    const userId = req.user.id; 
-    const updateData = req.body;
-    
-    if (updateData.visit_date && !updateData.visit_date.includes('-')) {
-        updateData.visit_date = updateData.visit_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
-    }
+router.delete('/:id', catchAsync(async (req, res) => {
+    const visitId = req.params.id
 
-    const result = await VisitService.patchVisit(visitId, userId, updateData, req.files);
+    const result = await VisitService.deleteVisit(visitId);
 
     res.status(200).json({
-        success: true,
-        message: "리뷰가 수정되었습니다."
+        success: result
     });
 }));
 

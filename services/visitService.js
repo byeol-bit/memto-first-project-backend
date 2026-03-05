@@ -57,6 +57,29 @@ class VisitService {
         };
     }
 
+    static async patchVisit(visitId, updateData) {
+
+        let sql = `UPDATE visits SET review = ? WHERE id = ?`
+        let params = []
+
+        params.push(updateData.review) 
+        params.push(visitId)
+
+        const visits = await VisitRepo.edit(sql, params);
+        return visits
+    }
+
+    static async deleteVisit(visitId) {
+        let sql = `DELETE FROM visits WHERE id = ?`
+        let params = [visitId]
+        let result = 'success'
+        const visits = await VisitRepo.delete(sql, params);
+
+        if (visits.affectedRows === 0) {
+            result = 'fail'
+        }
+        return result
+    }
     static async toggleLike(userId, visitId, isLike) {
         if (isLike) {
             await VisitRepo.addLike(userId, visitId);
