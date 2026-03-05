@@ -292,25 +292,21 @@ async function updateUser(id, updateUserInput, file) {
 
     let newUpdateUserInput = {};
 
-    if (!file) {
-        let err = new Error('이미지가 존재하지 않습니다');
-        err.statusCode = 400;
-        return err;
-    }
-    let ext = file.originalname.split('.').at(-1);
-    if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
-        let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
-        err.statusCode = 400;
-        return err;
-    }
+    if (file) {
+        let ext = file.originalname.split('.').at(-1);
+        if (!IMAGE_EXT.includes(ext) || !file.mimetype.startsWith('image')) {
+            let err = new Error(`파일 타입은 ${IMAGE_EXT}만 허용됩니다.`);
+            err.statusCode = 400;
+            return err;
+        }
 
-    let path = 'images/users';
-    let filename = `${id}.${ext}`;
+        let path = 'images/users';
+        let filename = `${id}.${ext}`;
 
-    await fs.mkdir(path, { recursive: true });
-    await fs.rename(`${file.path}`, `${path}/${filename}`);
-    newUpdateUserInput.profile_image = filename;
-    
+        await fs.mkdir(path, { recursive: true });
+        await fs.rename(`${file.path}`, `${path}/${filename}`);
+        newUpdateUserInput.profile_image = filename;
+    }
 
     for (const [key, value] of Object.entries(updateUserInput)) {
         if (value != null) {
