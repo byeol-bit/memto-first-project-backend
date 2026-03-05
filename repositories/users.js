@@ -108,7 +108,7 @@ async function searchUsers(nickname, visitCounts, visitCountOver7, offset, limit
             values.push(visitCounts);
         }
         if (visitCountOver7) {
-            sql += 'OR u.visit_count > 7';
+            sql += ' OR u.visit_count > 7';
         }
         sql += ')';
     }
@@ -116,6 +116,7 @@ async function searchUsers(nickname, visitCounts, visitCountOver7, offset, limit
     sql += ' LIMIT ?, ?';
     values.push(offset, limit);
 
+    console.log(sql);
     let [results] = await pool.query(sql, values);
     return results;
 }
