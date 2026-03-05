@@ -285,6 +285,8 @@ router.post('/', upload.array('image', 5), catchAsync(async (req, res) => {
  *                     type: string
  *                   restaurantLikeCount:
  *                     type: integer
+ *                   total_review_restaurant_count:
+ *                     type: integer
  *               user:
  *                 type: object
  *                 properties:

@@ -347,7 +347,7 @@ router.get('/kakao', catchAsync(async (req, res) => {
  *     summary: 특정 식당 조회
  *     description: |
  *       kakao_id로 DB에 등록된 특정 식당을 반환합니다.
- *       restaurants 고유 id가 아닙니다. kakao_id 사용하셔야 합니다.
+ *       restaurants 고유 id가 아닙니다. 
  *     produces:
  *       - application/json
  *     consumes:
@@ -359,11 +359,20 @@ router.get('/kakao', catchAsync(async (req, res) => {
  *         type: number
  *     responses:
  *       200:
- *         description: |
- *           특정 식당 반환
- *           없는 id의 경우 오류코드가 아닌 빈 배열 반환
+ *         description: 특정 식당 반환
  *         schema:
- *           $ref: "#/definitions/restaurants"
+ *           allOf:
+ *             - $ref: "#/definitions/restaurants"
+ *             - type: object
+ *               properties:
+ *                 visits_count:
+ *                   type: integer
+ *                   description: "해당 식당의 총 방문 횟수"
+ *                   example: 15
+ *                 likes_count:
+ *                   type: integer
+ *                   description: "해당 식당의 총 좋아요 수"
+ *                   example: 5
  *       400:
  *         description: Id 누락
  *         schema:
@@ -377,11 +386,11 @@ router.get('/kakao', catchAsync(async (req, res) => {
 
 router.get('/:id', catchAsync(async (req, res) => {
     let { id } = req.params
-    // if (isNaN(id)) {
-    //     const error = new Error("유효하지 않은 형식입니다.");
-    //     error.status = 400;
-    //     throw error;
-    // }
+    if (isNaN(id)) {
+        const error = new Error("유효하지 않은 형식입니다.");
+        error.status = 400;
+        throw error;
+    }
     console.log(`385번째 줄 ${id}`)
     id = parseInt(id)
     const restaurants = await RestaurantService.getRestaurants(id);
