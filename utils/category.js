@@ -5,13 +5,6 @@ const CATEGORIES = [
     '맛집 개척 교수',
     '맛집 총장'
 ];
-const CATEGORIES2 = [
-    '길_잃은_미식가',
-    '쩝쩝_학부생',
-    '동네_탐구_석사',
-    '맛집_개척_교수',
-    '맛집_총장'
-];
 
 /**
  * @param {number} reviewCount
@@ -33,6 +26,5 @@ function getCategory(reviewCount) {
 
 module.exports = {
     CATEGORIES,
-    CATEGORIES2,
     getCategory
 }

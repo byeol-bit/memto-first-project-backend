@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const passwordUtil = require('../utils/password');
 const userRepository = require('../repositories/users');
-const {CATEGORIES, CATEGORIES2, getCategory} = require('../utils/category');
+const {CATEGORIES, getCategory} = require('../utils/category');
 
 const IMAGE_EXT = ['jpeg', 'png', 'gif', 'webp'];
 
@@ -188,15 +188,15 @@ async function searchUsers(filters, page, limit) {
     let visitCounts = [];
     let visitCountOver7 = false;
     for(let c of categories) {
-        if (c === CATEGORIES2[0]) {
+        if (c === CATEGORIES[0]) {
             visitCounts.push(0, 1);
-        } else if (c === CATEGORIES2[1]) {
+        } else if (c === CATEGORIES[1]) {
             visitCounts.push(2, 3);
-        } else if (c === CATEGORIES2[2]) {
+        } else if (c === CATEGORIES[2]) {
             visitCounts.push(4, 5);
-        } else if (c === CATEGORIES2[3]) {
+        } else if (c === CATEGORIES[3]) {
             visitCounts.push(6, 7);
-        } else if (c === CATEGORIES2[4]) {
+        } else if (c === CATEGORIES[4]) {
             visitCountOver7 = true;
         }
     }

@@ -239,7 +239,7 @@ router.get('/', catchAsync(async (req, res) => {
  *       - in: query
  *         name: category
  *         type: string
- *         enum: ['길_잃은_미식가','쩝쩝_학부생','동네_탐구_석사','맛집_개척_교수','맛집_총장']
+ *         enum: ['길 잃은 미식가','쩝쩝 학부생','동네 탐구 석사','맛집 개척 교수','맛집 총장']
  *       - in: query
  *         name: page
  *         type: string
